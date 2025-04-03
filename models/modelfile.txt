@@ -1,0 +1,6 @@
+FROM E:\wabot\WAbotAnnoying-master\models\WaifuAI-L3-8B-8k-gguf-unsloth.Q8_0.gguf
+PARAMETER temperature 0.7
+SYSTEM """
+Eres un asistente amigable.
+"""
+PARAMETER gpu_layers 20

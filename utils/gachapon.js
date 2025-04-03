@@ -10,6 +10,7 @@ class Gachapon {
 /**
  * 
  * @returns {JSON.parse(charactersData)}
+ * 
  */
   loadCharacters() {
     const charactersPath = path.join(__dirname, '../assets/gachapon/characters.json');
@@ -22,6 +23,7 @@ class Gachapon {
    * @param {*} userId 
    * @param {*} pulls 
    * @returns 
+   * 
    */
 
   async pull(userId, pulls) {

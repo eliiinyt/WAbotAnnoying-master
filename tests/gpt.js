@@ -1,7 +1,9 @@
-const { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } = require("gpt4all")
+
+process.env.HF_HOME = '../models'
+const { createCompletion, loadModel } = require("gpt4all")
 
 const fun = async() => {
-const model = await loadModel('WaifuAI-L3-8B-8k-gguf-unsloth.F16.gguf', {allowDownload: true, verbose: true, device: 'amd', nCtx: 128, ngl:  4});
+const model = await loadModel('DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf', { modelPath: "../models/", allowDownload: true, verbose: true, device: 'gpu', nCtx: 204, ngl:  4, modelConfigFile: "../models/models3.json"} );
 const chat = await model.createChatSession();
 console.log(chat)
 const completion1 = await createCompletion(model, 'Hola, ¿Hablas español?', { verbose: false, })

@@ -7,21 +7,21 @@ const { processMessage } = require("./utils/serialize");
 const chokidar = require("chokidar");
 const DBManager = require('./utils/dbManager');
 const Gachapon = require('./utils/gachapon');
-const User = require("./schemas/User")
-// const GPTWrapper = require("./libs/gpt");
-// const { DEFAULT_MODEL_CONFIG } = require("gpt4all");
+const GPTWrapper = require("./libs/gpt");
 
-const model = "mistral-7b-instruct-v0.1.Q4_0.gguf"; //'gpt4all-falcon-newbpe-q4_0.gguf'
+const model =    "DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf";  
+// 'DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf'; 'gpt4all-falcon-newbpe-q4_0.gguf'
 const options = {
+  modelPath: "./models/",
   allowDownload: true,
   verbose: true,
-  device: "amd",
+  device: "NVIDIA GeForce GTX 1060 6GB",
   nCtx: 700,
-  ngl: 20,
-  // modelConfigFile: './libs/gpt_config.json'
+
+  //modelConfigFile: "./models/models3.json",
 };
 
-// const gptWrapper = new GPTWrapper(model, options);
+//const gptWrapper = new GPTWrapper(model, options);
 
 const dbManager = new DBManager(config.dbUri, config.dbName);
 const commandsDir = path.join(__dirname, "commands");
@@ -113,7 +113,7 @@ const Init = async () => {
         await command.execute({
           message,
           dbManager,
-          //gptWrapper,
+         // gptWrapper,
           gachapon,
           watchMessage,
         });
