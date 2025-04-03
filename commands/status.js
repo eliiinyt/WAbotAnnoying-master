@@ -1,74 +1,39 @@
 let { performance } = require('perf_hooks')
 let osu = require('node-os-utils')
+
 module.exports = {
     name: 'status',
     description: 'pong',
     execute: async ({message}) => {
         try {
-            let NotDetect = 'Not Detect'
-            let old = performance.now()
-            let cpu = osu.cpu
-            let cpuCore = cpu.count()
-            let drive = osu.drive
-            let mem = osu.mem
-            let netstat = osu.netstat
-            let OS = osu.os.platform()
-            let cpuModel = cpu.model()
-            let cpuPer
-            let p1 = cpu.usage().then(cpuPercentage => {
-                cpuPer = cpuPercentage
-            }).catch(() => {
-                cpuPer = NotDetect
-            })
-            let driveTotal, driveUsed, drivePer
-            let p2 = drive.info().then(info => {
-                driveTotal = (info.totalGb + ' GB'),
-                    driveUsed = info.usedGb,
-                    drivePer = (info.usedPercentage + '%')
-            }).catch(() => {
-                driveTotal = NotDetect,
-                    driveUsed = NotDetect,
-                    drivePer = NotDetect
-            })
-            let ramTotal, ramUsed
-            let p3 = mem.info().then(info => {
-                ramTotal = info.totalMemMb,
-                    ramUsed = info.usedMemMb
-            }).catch(() => {
-                ramTotal = NotDetect,
-                    ramUsed = NotDetect
-            })
-            let netsIn, netsOut
-            let p4 = netstat.inOut().then(info => {
-                netsIn = (info.total.inputMb + ' MB'),
-                    netsOut = (info.total.outputMb + ' MB')
-            }).catch(() => {
-                netsIn = NotDetect,
-                    netsOut = NotDetect
-            })
-            await Promise.all([p1, p2, p3, p4])
-            let _ramTotal = (ramTotal + ' MB')
-            let neww = performance.now()
-            message.reply(
-                `*『 Status 』*
-> CPU: ${cpuModel}
-> CPU Core: ${cpuCore} núcleos
+            const NotDetect = 'No detectado'
+            const { cpu, drive, mem, os } = osu
+            
+            const [cpuInfo, driveInfo, memInfo] = await Promise.allSettled([
+                cpu.usage(),
+                drive.info(),
+                mem.info()
+            ])
+
+            const cpuPer = cpuInfo.status === 'fulfilled' ? cpuInfo.value : NotDetect
+            const { totalGb, usedGb, usedPercentage } = driveInfo.status === 'fulfilled' ? driveInfo.value : {}
+            const { totalMemMb, usedMemMb } = memInfo.status === 'fulfilled' ? memInfo.value : {}
+
+            const ramPercentage = totalMemMb && usedMemMb ? 
+                Math.round(100 * (usedMemMb / totalMemMb)) + '%' : 
+                NotDetect
+
+            message.reply(`
+*Status*
+> CPU: ${cpu.model()}
+> CPU Core: ${cpu.count()} núcleos
 > Uso de CPU: ${cpuPer}%
-> RAM: ${ramUsed} / ${_ramTotal} (${/[0-9.+/]/g.test(ramUsed) && /[0-9.+/]/g.test(ramTotal) ? Math.round(100 * (ramUsed / ramTotal)) + '%' : NotDetect})
-> Ping: ${Math.round(neww - old)} ms
+> RAM: ${usedMemMb || NotDetect} / ${totalMemMb ? totalMemMb + ' MB' : NotDetect} (${ramPercentage})
+> Sistema: ${os.platform()}
 `)
         } catch (e) {
-            console.log(e)
-            message.reply('error' + e)
+            console.error('Error in status command:', e)
+            message.reply('Error al obtener el estado del sistema')
         }
     }
-
-}
-
-function clockString(ms) {
-    let h = Math.floor(ms / 3600000)
-    let m = Math.floor(ms / 60000) % 60
-    let s = Math.floor(ms / 1000) % 60
-    console.log({ ms, h, m, s })
-    return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
 }

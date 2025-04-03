@@ -8,8 +8,8 @@ const chokidar = require("chokidar");
 const DBManager = require('./utils/dbManager');
 const Gachapon = require('./utils/gachapon');
 const User = require("./schemas/User")
-const GPTWrapper = require("./libs/gpt");
-const { DEFAULT_MODEL_CONFIG } = require("gpt4all");
+// const GPTWrapper = require("./libs/gpt");
+// const { DEFAULT_MODEL_CONFIG } = require("gpt4all");
 
 const model = "mistral-7b-instruct-v0.1.Q4_0.gguf"; //'gpt4all-falcon-newbpe-q4_0.gguf'
 const options = {
@@ -21,7 +21,7 @@ const options = {
   // modelConfigFile: './libs/gpt_config.json'
 };
 
-const gptWrapper = new GPTWrapper(model, options);
+// const gptWrapper = new GPTWrapper(model, options);
 
 const dbManager = new DBManager(config.dbUri, config.dbName);
 const commandsDir = path.join(__dirname, "commands");
@@ -37,7 +37,7 @@ const loadCommands = (filePath) => {
 const Init = async () => {
   try {
     await dbManager.connect();
-    // await gptWrapper.load();
+    //await gptWrapper.load();
     chokidar.watch(commandsDir, { ignoreInitial: true })
       .on("change", loadCommands);
 
@@ -56,12 +56,15 @@ const Init = async () => {
       console.log("Received message:", message);
 
 
-      // Actualizar estadísticas de usuario y global
-
-      await dbManager.updateUserXp({ userId: message.sender.match(/^(\d+)@s\.whatsapp\.net$/)[1], xpToAdd: 10});
-      await dbManager.saveMessage({msg: message});
-      await dbManager.updateUserStats({ userId: message?.sender?.match(/^(\d+)@s\.whatsapp\.net$/)[1], type: "message"});
-      await dbManager.updateGlobalStats({ type: "message" });
+    
+      const senderId = message.sender.match(/^(\d+)@s\.whatsapp\.net$/)?.[1] || null
+      if (senderId) {
+        await dbManager.updateUserXp({ userId: senderId, xpToAdd: 10});
+        await dbManager.saveMessage({msg: message});
+        await dbManager.updateUserStats({ userId: senderId, type: "message"});
+        await dbManager.updateGlobalStats({ type: "message" });
+      }
+      
 
       if (!message.prefix) return;
 
@@ -110,12 +113,12 @@ const Init = async () => {
         await command.execute({
           message,
           dbManager,
-          gptWrapper,
+          //gptWrapper,
           gachapon,
           watchMessage,
         });
 
-        await dbManager.updateUserStats({userId: message?.sender?.match(/^(\d+)@s\.whatsapp\.net$/)[1], type: "command"})
+        await dbManager.updateUserStats({userId: senderId, type: "command"})
         await dbManager.updateGlobalStats({type: "command"});
 
       } catch (error) {

@@ -6,3 +6,4 @@ tests/mistral-7b-instruct-v0.1.Q4_01.gguf
 cache/temp
 asd.js
 cache
+auth_info_baileys

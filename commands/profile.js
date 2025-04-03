@@ -16,14 +16,14 @@ module.exports = {
                 return;
             }
 
-            // Create profile card
+    
             const canvas = createCanvas(800, 400);
             const ctx = canvas.getContext('2d');
 
-            // Background gradient
+           
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, '#FF69B4'); // Hot pink
-            gradient.addColorStop(1, '#800080'); // Purple
+            gradient.addColorStop(0, '#FF69B4');
+            gradient.addColorStop(1, '#800080');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -32,11 +32,10 @@ module.exports = {
             let bgImage = files[Math.floor(Math.random() * files.length)];
             bgImage = await fs.readFile(path.join(filePath, bgImage));
             bgImage = await loadImage(bgImage)
-            ctx.save(); // Save the current context state
-            ctx.globalAlpha = 0.3; // Set the transparency (0.0 to 1.0)
+            ctx.save(); 
+            ctx.globalAlpha = 0.3; 
             ctx.drawImage(bgImage, (canvas.width - 100) / 2, (canvas.height - 300) / 2, 300, 300);
             ctx.restore();
-            // Avatar (default image)
 
             let avatar;
             try {

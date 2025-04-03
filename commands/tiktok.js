@@ -1,4 +1,4 @@
-const { tikdown } = require("nayan-media-downloader")
+const { tikdown } = require("nayan-videos-downloader")
 module.exports = {
     name: 'tiktok',
     description: 'tt downloader',

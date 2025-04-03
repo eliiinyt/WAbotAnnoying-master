@@ -1,117 +1,131 @@
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 const {
   makeWASocket,
   useMultiFileAuthState,
   makeInMemoryStore,
   DisconnectReason,
-} = require("baileys");
-const pino = require("pino");
+  proto,
+} = require('baileys');
+const pino = require('pino');
+
+const CONNECTION_TIMEOUT = 30000;
+const RECONNECT_DELAY = 5000;
 
 class Client extends EventEmitter {
   client;
   store;
+  logger;
+
   constructor() {
     super();
+    this.logger = pino({ level: 'silent' });
   }
 
   async connect() {
-    const logger = pino({ level: "silent" });
-    this.store = makeInMemoryStore({ logger });
-    const { state, saveCreds } = await useMultiFileAuthState("Auth");
-
     try {
-      await this.initSocket(state, logger, saveCreds);
-    } catch (e) {
-      this.emit("auth_error", e);
+      this.store = makeInMemoryStore({ logger: this.logger });
+      const { state, saveCreds } = await useMultiFileAuthState('Auth');
+      await this.initSocket(state, saveCreds);
+    } catch (error) {
+      this.handleError('Autenticación fallida', error);
     }
   }
 
-  async initSocket(state, logger, saveCreds) {
+  async initSocket(state, saveCreds) {
     this.client = makeWASocket({
-      version: [2, 2413, 1],
-      printQRInTerminal: true,
-      // mobile: false,
-      // browser: Browsers.ubuntu('Chrome'),
       auth: state,
-      logger,
-      getMessage: (key) => {
-        if (this.store) {
-          const msg = this.store.loadMessage(key.remoteJid, key.id);
-          return msg?.message;
-        }
-        return proto.Message.fromObject({});
+      printQRInTerminal: true,
+      logger: this.logger,
+      getMessage: async (key) => {
+        return this.store?.loadMessage(key.remoteJid, key.id)?.message || proto.Message.fromObject({});
       },
     });
 
+    this.setupCoreListeners(saveCreds);
+    await this.waitForConnection();
+  }
+
+  setupCoreListeners(saveCreds) {
     this.store.bind(this.client.ev);
-
-    this.client.ev.on("creds.update", saveCreds);
-    this.client.ev.on("connection.update", (update) => this.updateConnection(update));
-
-    try {
-      await this.waitForConnection();
-    } catch (e) {
-      console.error("Fallo al establecer la conexión:", e);
-    }
+    this.client.ev.on('creds.update', saveCreds);
+    this.client.ev.on('connection.update', (update) => this.handleConnectionUpdate(update));
   }
 
   async waitForConnection() {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        this.client.ev.off("connection.update", checkConnection);
-        reject(new Error("Connection timeout!"));
-      }, 30000); // 30 seconds timeout
+        this.cleanupConnectionListeners(checkConnection);
+        reject(new Error(`Tiempo de conexión agotado después de ${CONNECTION_TIMEOUT}ms`));
+      }, CONNECTION_TIMEOUT);
 
       const checkConnection = ({ connection }) => {
-        if (connection === "open") {
-          clearTimeout(timeout);
-          this.client.ev.off("connection.update", checkConnection);
+        if (connection === 'open') {
+          this.cleanupConnectionListeners(checkConnection, timeout);
           resolve();
-        } else if (connection === "close") {
-          clearTimeout(timeout);
-          this.client.ev.off("connection.update", checkConnection);
-          reject(new Error("Connection closed"));
+        } else if (connection === 'close') {
+          this.cleanupConnectionListeners(checkConnection, timeout);
+          reject(new Error('Conexión cerrada'));
         }
       };
 
-      this.client.ev.on("connection.update", checkConnection);
+      this.client.ev.on('connection.update', checkConnection);
     });
   }
 
-  updateConnection({ connection, lastDisconnect }) {
-    if (connection === "close") {
-      console.log("Error de conexión:", lastDisconnect?.error);
+  cleanupConnectionListeners(listener, timeout) {
+    if (timeout) clearTimeout(timeout);
+    this.client.ev.off('connection.update', listener);
+  }
 
-      const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      if (shouldReconnect) {
-        console.log("Reconectando en 5 segundos");
-        setTimeout(() => this.connect(), 5000);
-      } else {
-        console.log("Conexion cerrada");
+  handleConnectionUpdate({ connection, lastDisconnect }) {
+    if (connection === 'close') {
+      this.handleDisconnect(lastDisconnect);
+    } else if (connection === 'open') {
+      this.handleSuccessfulConnection();
+    }
+
+    this.emit('connection.update', { connection, lastDisconnect });
+  }
+
+  handleDisconnect(lastDisconnect) {
+    this.logger.warn('Conexión cerrada:', lastDisconnect?.error);
+
+    if (lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut) {
+      this.logger.info(`Reconectando en ${RECONNECT_DELAY / 1000} segundos...`);
+      setTimeout(() => this.connect(), RECONNECT_DELAY);
+    } else {
+      this.logger.info('Sesión cerrada, no se reconectará.');
+    }
+  }
+
+  handleSuccessfulConnection() {
+    this.setupEventListeners();
+    this.emit('connection.open');
+  }
+
+  setupEventListeners() {
+    this.logger.info('Conexión establecida, configurando listeners de eventos.');
+
+    this.client.ev.on('group-participants.update', (update) =>
+      this.emit('participant-update', this.client, update)
+    );
+
+    this.client.ev.on('groups.update', (update) =>
+      this.emit('group-update', this.client, update)
+    );
+
+    this.client.ev.on('messages.upsert', async ({ messages }) => {
+      for (const message of messages) {
+        if (!message.key.fromMe && message.message) {
+          this.emit('message', message);
+        }
       }
-    } else if (connection === "open") {
-      console.log("Connection opened.");
+    });
+  }
 
-      this.client.ev.on("group-participants.update", (update) =>
-        this.emit("participant-update", this.client, update)
-      );
-
-      this.client.ev.on("groups.update", (update) =>
-        this.emit("group-update", this.client, update)
-      );
-
-      this.emit("connection.open");
-
-      this.client.ev.on("messages.upsert", async ({ messages }) => {
-        for (const message of messages) {
-          if (!message.key.fromMe && message.message) {
-            this.emit("message", message);
-          };
-        };
-      });
-    };
-
-    this.emit("connection.update", { connection, lastDisconnect });
+  handleError(context, error) {
+    this.logger.error(`${context}:`, error);
+    this.emit('error', error);
   }
 }
 

@@ -1,4 +1,4 @@
-const { twitterdown} = require("nayan-media-downloader")
+const { twitterdown} = require("nayan-videos-downloader")
 module.exports = {
     name: 'twitter',
     description: 'twitter downloader',
