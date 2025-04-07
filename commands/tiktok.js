@@ -3,10 +3,11 @@ module.exports = {
     name: 'tiktok',
     description: 'tt downloader',
     execute: async ({message}) => {
+      if (!message.args[0]) return message.reply('Por favor, proporciona un enlace de TikTok')
       let res = await tikdown(message.args[0])
-      console.log(res)
       res = res.data
-        await message.reply({ video: { url: res.video }, caption: res.title, mimetype: "video/mp4" });
+      if (!res) return message.reply('No se pudo descargar el video')
+      await message.reply({ video: { url: res.video }, caption: res.title, mimetype: "video/mp4" });
     },
   };
   

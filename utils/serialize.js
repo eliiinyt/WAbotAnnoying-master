@@ -48,6 +48,9 @@ const getMessageContent = (message, types) => {
  */
 const getBody = (message) => {
   try {
+    if (message.extendedTextMessage && message.extendedTextMessage.text) {
+      return message.extendedTextMessage.text;
+    }
     return (
       message.conversation ??
       message.extendedTextMessage?.text ??
