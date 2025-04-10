@@ -4,5 +4,6 @@ module.exports = {
     dbName: 'whatsapp_bot',
     owners: [
         ["593961973446@s.whatsapp.net", "Elin"],
-    ]
+    ],
+    fromMe: false
 };

@@ -1,4 +1,3 @@
-const { delay } = require("baileys");
 module.exports = {
     name: 'testw',
     description: 'pong',

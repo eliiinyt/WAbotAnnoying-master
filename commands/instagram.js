@@ -3,8 +3,14 @@ module.exports = {
     name: 'instagram',
     description: 'ig downloader',
     execute: async ({message}) => {
+      try {
+        
       let res = await ndown(message.args[0])
-        await message.reply({ video: { url: res.data[0].url }, caption: "test", mimetype: "video/mp4" });
-    },
-  };
+      await message.reply({ video: { url: res.data[0].url }, caption: "test", mimetype: "video/mp4" });
+    } catch (error) {
+        throw error
+      
+    }
+  }
+}
   

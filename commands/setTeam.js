@@ -3,10 +3,14 @@ const characterData = require('../utils/getCharacterData');
 module.exports = {
   name: 'setteam',
   description: 'Selecciona un equipo de 4 personajes para el combate',
-  execute: async ({message, gachapon, dbManager}) => {
+  execute: async ({message, dbManager}) => {
+    try {
     const userId = message.sender.match(/^(\d+)@s\.whatsapp\.net$/)[1];
     const teamManager = new TeamManager({dbManager});
     const args = message.args
+    if (!args[0]) {
+      throw new Error('Por favor, proporciona al menos un ID de personajes.');
+    }
     if (args[0] === "info") {
         const characterAttributes = new characterData({dbManager});
         const inventory = await teamManager.getTeam({userId})
@@ -26,11 +30,11 @@ module.exports = {
       return;
     }
 
-    try {
+    
       await teamManager.setTeam(userId, args);
       message.reply('Equipo actualizado correctamente.');
     } catch (error) {
-      message.reply(`Error al actualizar el equipo: ${error.message}`);
+      throw error
     }
   }
 };

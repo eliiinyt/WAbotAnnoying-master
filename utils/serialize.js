@@ -142,7 +142,7 @@ const processMessage = async (client, msg) => {
         body: getBody(quotedMessage),
         args: getBody(quotedMessage ?? '').trim().split(/\s+/),
         mentions: quotedMessage?.[type]?.contextInfo?.mentionedJid ?? [],
-        viewOnce: !!(
+        viewOnce: Boolean(
           quotedMessage.viewOnceMessage ||
           quotedMessage.viewOnceMessageV2 ||
           quotedMessage.viewOnceMessageV2Extension

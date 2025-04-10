@@ -52,9 +52,12 @@ const Init = async () => {
     });
 
     client.on("message", async (msg) => {
+      if (msg.key.remoteJid === "status@broadcast") return;
+      if (config.fromMe === false && msg.key.fromMe) {
+        return;
+      }
       const message = await processMessage(client.client, msg);
       console.log("Received message:", message);
-
 
     
       const senderId = message.sender.match(/^(\d+)@s\.whatsapp\.net$/)?.[1] || null
@@ -109,7 +112,7 @@ const Init = async () => {
       };
 
       try {
-
+        await message.react("✅");
         await command.execute({
           message,
           dbManager,
@@ -117,15 +120,14 @@ const Init = async () => {
           gachapon,
           watchMessage,
         });
-
         await dbManager.updateUserStats({userId: senderId, type: "command"})
         await dbManager.updateGlobalStats({type: "command"});
-
       } catch (error) {
-        await dbManager.updateGlobalStats({type: "error"});
+
+        await dbManager.updateGlobalStats({ type: "error" });
         console.error("Error ejecutando comando: ", error);
         await message.react("💀");
-        await message.reply("Error:" + error);
+        await message.reply("Error: " + error.message);
       }
     });
 

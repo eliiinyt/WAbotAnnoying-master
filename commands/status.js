@@ -31,9 +31,8 @@ module.exports = {
 > RAM: ${usedMemMb || NotDetect} / ${totalMemMb ? totalMemMb + ' MB' : NotDetect} (${ramPercentage})
 > Sistema: ${os.platform()}
 `)
-        } catch (e) {
-            console.error('Error in status command:', e)
-            message.reply('Error al obtener el estado del sistema')
+        } catch (error) {
+            throw new Error('Error al obtener el estado del sistema')
         }
     }
 }

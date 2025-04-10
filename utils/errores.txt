@@ -1,0 +1,118 @@
+
+Error descargando archivo: ENOENT: no such file or directory, open 'E:\wabot\WAbotAnnoying-master\cache\temp\1744097138549.jpg'
+Error ejecutando comando:  TypeError: Cannot read properties of null (reading 'trim')
+    at Sticker.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:59:29)
+    at Generator.next (<anonymous>)
+    at E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:27:71
+    at new Promise (<anonymous>)
+    at __awaiter (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:23:12)
+    at Sticker._parse (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:56:29)
+    at Sticker.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:84:37)
+    at Generator.next (<anonymous>)
+    at E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:27:71
+    at new Promise (<anonymous>)
+
+
+    }
+Connection update: {
+  connection: 'close',
+  lastDisconnect: {
+    error: Error: Connection Terminated
+        at WebSocketClient.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Socket\socket.js:454:30)
+        at WebSocketClient.emit (node:events:530:35)
+        at WebSocket.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Socket\Client\websocket.js:46:100)
+        at WebSocket.emit (node:events:518:28)
+        at WebSocket.emitClose (E:\wabot\WAbotAnnoying-master\node_modules\ws\lib\websocket.js:272:10)
+        at Receiver.receiverOnFinish (E:\wabot\WAbotAnnoying-master\node_modules\ws\lib\websocket.js:1209:20)
+        at Receiver.emit (node:events:518:28)
+        at finish (node:internal/streams/writable:955:10)
+        at node:internal/streams/writable:936:13
+        at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+      data: null,
+      isBoom: true,
+      isServer: false,
+      output: [Object]
+    },
+    date: 2025-04-08T10:16:10.209Z
+  }
+}
+Connection update: { connection: 'connecting', lastDisconnect: undefined }
+Connection update: {
+  connection: 'close',
+  lastDisconnect: {
+    error: Error: WebSocket Error (getaddrinfo ENOTFOUND web.whatsapp.com)
+        at WebSocketClient.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Socket\socket.js:620:17)
+        at WebSocketClient.emit (node:events:518:28)
+        at WebSocket.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Socket\Client\websocket.js:46:100)
+        at WebSocket.emit (node:events:518:28)
+        at emitErrorAndClose (E:\wabot\WAbotAnnoying-master\node_modules\ws\lib\websocket.js:1041:13)
+        at ClientRequest.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\ws\lib\websocket.js:881:5)
+        at ClientRequest.emit (node:events:518:28)
+        at emitErrorEvent (node:_http_client:104:11)
+        at TLSSocket.socketErrorListener (node:_http_client:518:5)
+        at TLSSocket.emit (node:events:518:28) {
+      data: [Error],
+      isBoom: true,
+      isServer: false,
+      output: [Object]
+    },
+    date: 2025-04-08T10:16:26.301Z
+  }
+}
+E:\wabot\WAbotAnnoying-master\client.js:67
+          reject(new Error('Conexión cerrada'));
+                 ^
+
+Error: Conexión cerrada
+    at EventEmitter.checkConnection (E:\wabot\WAbotAnnoying-master\client.js:67:18)
+    at EventEmitter.emit (node:events:530:35)
+    at EventEmitter.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Utils\event-buffer.js:40:16)
+    at EventEmitter.emit (node:events:518:28)
+    at Object.emit (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Utils\event-buffer.js:94:23)
+    at end (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Socket\socket.js:262:12)
+    at WebSocketClient.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Socket\socket.js:620:9)
+    at WebSocketClient.emit (node:events:518:28)
+    at WebSocket.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\baileys\lib\Socket\Client\websocket.js:46:100)
+    at WebSocket.emit (node:events:518:28)
+Emitted 'error' event on Client instance at:
+    at Client.handleError (E:\wabot\WAbotAnnoying-master\client.js:128:10)
+    at Client.connect (E:\wabot\WAbotAnnoying-master\client.js:30:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v22.14.0
+
+
+
+Error ejecutando comando:  TypeError: Cannot read properties of null (reading 'trim')
+    at Sticker.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:59:29)
+    at Generator.next (<anonymous>)
+    at E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:27:71
+    at new Promise (<anonymous>)
+    at __awaiter (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:23:12)
+    at Sticker._parse (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:56:29)
+    at Sticker.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:84:37)
+    at Generator.next (<anonymous>)
+    at E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:27:71
+    at new Promise (<anonymous>)
+Error ejecutando comando:  TypeError: Cannot read properties of null (reading 'trim')
+    at Sticker.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:59:29)
+    at Generator.next (<anonymous>)
+    at E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:27:71
+    at new Promise (<anonymous>)
+    at __awaiter (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:23:12)
+    at Sticker._parse (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:56:29)
+    at Sticker.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:84:37)
+    at Generator.next (<anonymous>)
+    at E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:27:71
+    at new Promise (<anonymous>)
+Error ejecutando comando:  TypeError: Cannot read properties of null (reading 'trim')
+    at Sticker.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:59:29)
+    at Generator.next (<anonymous>)
+    at E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:27:71
+    at new Promise (<anonymous>)
+    at __awaiter (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:23:12)
+    at Sticker._parse (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:56:29)
+    at Sticker.<anonymous> (E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:84:37)
+    at Generator.next (<anonymous>)
+    at E:\wabot\WAbotAnnoying-master\node_modules\wa-sticker-formatter\dist\Sticker.js:27:71
+    at new Promise (<anonymous>)

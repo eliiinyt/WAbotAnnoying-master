@@ -14,8 +14,7 @@ module.exports = {
 
       if (command === 'pull') {
         if (isNaN(pulls) || pulls <= 0) {
-          message.reply('Número inválido, por favor especifique un número entero positivo');
-          return;
+          throw new Error('Número inválido, por favor especifique un número entero positivo');
         }
 
         const characterIds = await gachapon.pull(userId, pulls);
@@ -58,8 +57,7 @@ module.exports = {
         const characterId = args[1]; // ID del personaje se pasa como segundo argumento
 
         if (!characterId) {
-          message.reply('Por favor, proporciona el ID del personaje para ver su perfil.');
-          return;
+          throw new Error('Por favor, proporciona el ID del personaje para ver su perfil.');
         }
         //const characters = await getCharacterData(inventory);
         const characterDetails = await characterAttributes.getUserCharacterAttributes(userId, characterId)
@@ -76,8 +74,7 @@ module.exports = {
         const newLevel = parseInt(args[2], 10); // nuevo nivel se pasa como tercer argumento
 
         if (isNaN(newLevel) || newLevel <= 0) {
-          message.reply('Nivel inválido, por favor especifique un número entero positivo');
-          return;
+          throw new Error('Nivel inválido, por favor especifique un número entero positivo');
         }
         const updatedCharacter = await characterAttributes.levelUp({userId, characterId, newLevel});
 
@@ -88,8 +85,7 @@ module.exports = {
         message.reply('Comando inválido, usa "gachapon pull", "gachapon inventory", "gachapon profile [ID]" o "gachapon levelup [ID] [Nuevo Nivel]".');
       }
     } catch (error) {
-      console.error(error);
-      message.reply(`Error: ${error.message}`);
+    throw error;
     }
   },
 };

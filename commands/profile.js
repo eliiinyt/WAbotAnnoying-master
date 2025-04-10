@@ -12,8 +12,7 @@ module.exports = {
             const user = await dbManager.getUserData(userId);
 
             if (!user) {
-                message.reply(`Datos no encontrados para el usuario: ${userId}`);
-                return;
+                throw new Error(`Datos no encontrados para el usuario: ${userId}`);
             }
 
     
@@ -44,7 +43,7 @@ module.exports = {
                 console.error('Error fetching profile picture:', error.message, error.data);
                 avatar = await loadImage(path.join(__dirname, '../', 'assets', 'gachapon', 'images', 'defaultImg.png')); // Default avatar path
             }
-            // Draw circular avatar
+
             const avatarSize = 160;
             const avatarX = 20;
             const avatarY = 20;
@@ -56,8 +55,8 @@ module.exports = {
             ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
             ctx.restore();
 
-            // User Info
-            ctx.fillStyle = '#FFFFFF'; // White color for text
+
+            ctx.fillStyle = '#FFFFFF';
             ctx.font = '20px Arial';
             
         
@@ -74,18 +73,15 @@ module.exports = {
             ctx.fillText(`Nivel: ${user.level}`, 200, startY + 120);
             ctx.fillText(`Monedas: ${user.coins}`, 200, startY + 150);
 
-            // Convert canvas to buffer
+            
             const buffer = canvas.toBuffer();
-
-            // Send the image as a message
             const imageMessage = {
                 caption: 'Perfil del Usuario',
                 image: buffer
             };
-            await message.reply(imageMessage);
+            message.reply(imageMessage);
         } catch (error) {
-            console.error('Error fetching user data:', error);
-            message.reply('An error occurred while fetching user data.');
+            throw error;
         }
     }
 };

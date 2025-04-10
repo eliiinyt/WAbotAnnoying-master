@@ -116,7 +116,7 @@ class Client extends EventEmitter {
 
     this.client.ev.on('messages.upsert', async ({ messages }) => {
       for (const message of messages) {
-        if (!message.key.fromMe && message.message) {
+        if (message.message) {
           this.emit('message', message);
         }
       }
