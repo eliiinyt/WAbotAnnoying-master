@@ -1,8 +1,9 @@
 const { downloadMediaMessage } = require('baileys');
-const config = require('../config');
 const { writeFile } = require('fs/promises');
 const path = require('path');
 const { fromBuffer } = require('file-type');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const MediaType = [
   'imageMessage',
@@ -111,7 +112,7 @@ const processMessage = async (client, msg) => {
       quoted: null,
     };
 
-    m.prefix = m.args?.[0]?.startsWith(config.prefix) ? config.prefix : null;
+    m.prefix = m.args?.[0]?.startsWith(process.env.PREFIX) ? process.env.PREFIX : null;
     m.command = m.prefix && m.args?.length > 0
       ? m.args.shift().slice(m.prefix[0].length).toLowerCase()
       : null;

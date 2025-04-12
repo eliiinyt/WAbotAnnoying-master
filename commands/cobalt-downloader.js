@@ -3,6 +3,7 @@ const mime = require('mime-types');
 
     function determineMediaType(filename) {
       const mimeType = mime.lookup(filename);
+      console.log(mimeType)
       if (mimeType.startsWith('image/')) {
         return 'image';
       } else {
@@ -11,9 +12,9 @@ const mime = require('mime-types');
     }
 
 module.exports = {
-  name: "tiktok",
-  alias: ["tiktok", "cobalt"],
-  description: "tiktok downloader",
+  name: "cobalt-downloader",
+  alias: ["igdl", "cobalt"],
+  description: "cobalt downloader testing",
   execute: async ({ message, env }) => {
     try {
       const api = new CobaltAPI(
@@ -44,8 +45,6 @@ module.exports = {
         }
       } else if (downloadResponse.status === "redirect" || downloadResponse.status === "tunnel") {
         const mediaType = determineMediaType(downloadResponse.filename);
-        console.log(mediaType)
-        console.log(downloadResponse.filename)
         if (mediaType) {
           await message.reply({
             caption: downloadResponse.filename,
@@ -64,3 +63,36 @@ module.exports = {
     }
 }
 };
+
+
+// try {
+
+//     let res = await ndown(message.args[0])
+//     console.log(res)
+//     await message.reply({ video: { url: res.data[0].url }, caption: "test" });
+//   } catch (error) {
+//       throw error
+
+//   }
+
+// (async () => {
+//     const api = new CobaltAPI('http://localhost:9000', 'db50d9a7-d4e3-4e6f-9799-f17215ddff0b');
+
+//     try {
+//       const downloadData = {
+//         url: 'https://www.instagram.com/p/DISDsZ0yOZi/?utm_source=ig_web_copy_link',
+//         videoQuality: '720',
+//         audioFormat: 'mp3',
+//         filenameStyle: 'basic',
+//       };
+
+//       const downloadResponse = await api.processDownload(downloadData);
+//       console.log('Download Response:', downloadResponse);
+
+//       const serverInfo = await api.getServerInfo();
+//       console.log('Server Info:', serverInfo);
+
+//     } catch (error) {
+//         throw error
+//     }
+//   })();

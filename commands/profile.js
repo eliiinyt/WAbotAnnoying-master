@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs').promises;
 module.exports = {
     name: 'profile',
-    description: 'Retrieve user data and create a profile card',
+    description: 'Devuelve una tarjeta de perfil de usuario con sus datos en la DB',
     execute: async ({ message, dbManager }) => {
         try {
 

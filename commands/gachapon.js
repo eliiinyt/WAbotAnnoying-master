@@ -3,7 +3,7 @@ const characterData = require('../utils/getCharacterData');
 
 module.exports = {
   name: 'gachapon',
-  description: 'aceptar invitaciones a grupos',
+  description: 'Gachapon',
   execute: async ({ message, gachapon, dbManager }) => {
     try {
       const characterAttributes = new characterData({dbManager});

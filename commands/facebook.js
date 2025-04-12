@@ -1,7 +1,7 @@
 const { ndown } = require("nayan-videos-downloader")
 module.exports = {
     name: 'facebook',
-    description: 'tt downloader',
+    description: 'Facebook downloader',
     execute: async ({message}) => {
       try {
         let res = await ndown(message.args[0])

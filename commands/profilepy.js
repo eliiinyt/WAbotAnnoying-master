@@ -5,7 +5,7 @@ const { fromBuffer } = require('file-type');
 
 module.exports = {
     name: 'profilepy',
-    description: 'Retrieve user data and create a profile image',
+    description: 'devuelve los datos del usuario en una imagen hecha con python',
     execute: async ({ message, dbManager }) => {
         try {
             const userId = message.sender.match(/^(\d+)@s\.whatsapp\.net$/)[1];

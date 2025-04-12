@@ -168,6 +168,36 @@ class DBManager {
     }
   }
 
+  async updateUserData({ userId, set = {}, inc = {}, push = {}, updateGlobal = false, globalInc = {} }) {
+    try {
+      await this._ensureUserExists(userId);
+      const users = await this._getUserCollection();
+  
+      const updatePayload = {};
+      if (Object.keys(set).length > 0) updatePayload.$set = set;
+      if (Object.keys(inc).length > 0) updatePayload.$inc = inc;
+      if (Object.keys(push).length > 0) updatePayload.$push = push;
+  
+      if (Object.keys(updatePayload).length > 0) {
+        await users.updateOne({ user_id: userId }, updatePayload);
+      }
+      if (updateGlobal && Object.keys(globalInc).length > 0) {
+        await this.db.collection('stats').updateOne(
+          {},
+          { $inc: globalInc },
+          { upsert: true }
+        );
+      }
+    } catch (error) {
+      console.error('Error al actualizar datos del usuario:', error);
+      throw error;
+    }
+  }
+  
+
+
+
+
   async updateUserDailyRewardDate({ userId, date }) {
     try {
       await this._ensureUserExists(userId);

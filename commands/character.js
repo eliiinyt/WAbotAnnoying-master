@@ -1,6 +1,6 @@
 module.exports = {
     name: 'character',
-    description: 'lal',
+    description: 'Detalles de un personaje del gachapon',
     execute: async ({ message, gachapon }) => {
     try {
       const args = message.args;
