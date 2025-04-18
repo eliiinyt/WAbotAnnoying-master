@@ -11,6 +11,8 @@ const GPTWrapper = require("./libs/gpt");
 const { exec } = require('child_process');
 const dotenv = require('dotenv');
 dotenv.config();
+
+const logger = client.logger
 const model = "DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf";
 // 'DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf'; 'gpt4all-falcon-newbpe-q4_0.gguf'
 const options = {
@@ -72,8 +74,11 @@ const Init = async () => {
         return;
       }
       const message = await processMessage(client.client, msg);
-      console.log("Received message:", message);
-
+      if (process.env.DEBUG_MODE === true) {
+        console.log("Mensaje recibido:", message);
+      } else {
+        logMessage(message);
+      }
 
       const senderId = message.sender.match(/^(\d+)@s\.whatsapp\.net$/)?.[1] || null
 
@@ -138,3 +143,55 @@ const Init = async () => {
 };
 
 Init();
+
+
+const logMessage = (message) => {
+  if (!message) return;
+
+  switch (message.type) {
+    case 'imageMessage':
+      logger.info({
+        url: message.message.url,
+        mimetype: message.message.mimetype,
+        height: message.message.height,
+        width: message.message.width,
+        chat: message.chat,
+        sender: message.sender,
+        name: message.name,
+      }, 'Mensaje de imagen recibido');
+      break;
+
+    case 'textMessage':
+      logger.info({
+        body: message.body,
+        chat: message.chat,
+        sender: message.sender,
+        name: message.name,
+      }, 'Mensaje de texto recibido');
+      break;
+
+    case 'audioMessage':
+      logger.info({
+        url: message.message.url,
+        mimetype: message.message.mimetype,
+        chat: message.chat,
+        sender: message.sender,
+        name: message.name,
+      }, 'mensaje de audio recibido');
+      break;
+
+    case 'videoMessage':
+      logger.info({
+        url: message.message.url,
+        mimetype: message.message.mimetype,
+        chat: message.chat,
+        sender: message.sender,
+        name: message.name,
+      }, 'Mensaje de video recibido');
+      break;
+
+    default:
+      logger.info(message, 'Tipo de mensaje desconocido recibido');
+      break;
+  }
+};

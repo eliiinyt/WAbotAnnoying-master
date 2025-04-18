@@ -7,7 +7,12 @@ const {
   proto,
 } = require('baileys');
 const pino = require('pino');
-
+const pretty = require('pino-pretty');
+const stream = pretty({
+  colorize: true,
+  translateTime: true,
+  ignore: 'pid,hostname',
+});
 const CONNECTION_TIMEOUT = 30000;
 const RECONNECT_DELAY = 5000;
 
@@ -18,7 +23,8 @@ class Client extends EventEmitter {
 
   constructor() {
     super();
-    this.logger = pino({ level: 'silent' });
+    this.logger = pino({ level: 'info'}, stream);
+    this.logger.info('Iniciando cliente de WhatsApp');
   }
 
   async connect() {
