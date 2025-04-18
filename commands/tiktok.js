@@ -21,7 +21,7 @@ module.exports = {
         env.COBALT_API_KEY
       );
       if (!message.args || message.args.length === 0) {
-        throw new Error('No se proporcionó un enlace de Instagram.');   
+        throw new Error('No se proporcionó un enlace de Tiktok.');   
         }
       const downloadData = {
         url: message.args[0],
@@ -30,7 +30,6 @@ module.exports = {
         filenameStyle: "basic",
       };
       const downloadResponse = await api.processDownload(downloadData);
-
       if (downloadResponse.status === "picker") {
         console.log(downloadResponse.picker);
         let i = 0;
