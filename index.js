@@ -47,16 +47,15 @@ const Init = async () => {
 
     const gachapon = new Gachapon(dbManager);
 
-    exec("node ./cobalt/api/src/cobalt.js", (error, stdout, stderr) => {
+    exec("node ./cobalt/api/src/cobalt.js", (error) => {
       if (error) {
-          console.error(`Error: ${error.message}`);
+        if (error.code === 1) {
+        console.warn("Cobalt API ya está en ejecución.");
+        } else {
+          console.error("Error: ", error.message);
           return;
+        }
       }
-      if (stderr) {
-          console.error(`stderr: ${stderr}`);
-          return;
-      }
-      console.log(`stdout: ${stdout}`);
   });
   console.log("Ejecutando API de Cobalt...");
 
@@ -148,11 +147,25 @@ Init();
 
 
 const logMessage = (message) => {
+  try {
   if (!message) return;
+
+const quotedMessage = {
+  type: message.quoted?.type,
+  caption: message.quoted?.caption,
+  mentions: message.quoted?.mentions,
+  args: message.quoted?.args,
+  url: message.quoted?.message[message.quoted.type]?.url,
+  mimetype: message.quoted?.mimetype,
+  height: message.quoted?.message[message.quoted.type]?.height,
+  width: message.quoted?.message[message.quoted.type]?.width,
+  seconds: message.quoted?.message[message.quoted.type]?.seconds,
+};
+
 
   switch (message.type) {
     case 'imageMessage':
-      logger.info({
+      console.info('Mensaje de imagen recibido',{
         url: message.message.url,
         mimetype: message.message.mimetype,
         height: message.message.height,
@@ -160,17 +173,17 @@ const logMessage = (message) => {
         chat: message.chat,
         sender: message.sender,
         name: message.name,
-        quoted: message.quoted,
+        quoted: quotedMessage ? null : quotedMessage,
         command: message.command,
         prefix: message.prefix,
         mentions: message.mentions,
         mimetype: message.mimetype,
-      }, 'Mensaje de imagen recibido');
+      });
       break;
 
     case 'conversation':
       case 'extendedTextMessage':
-      logger.info({
+      console.info('Mensaje de texto recibido',{
         body: message.body,
         chat: message.chat,
         key: message.key,
@@ -180,29 +193,29 @@ const logMessage = (message) => {
         mimetype: message.mimetype,
         sender: message.sender,
         name: message.name,
-        quoted: message.quoted,
+        quoted: quotedMessage ? null : quotedMessage,
         command: message.command,
         prefix: message.prefix,
-      }, 'Mensaje de texto recibido');
+      });
       break;
 
     case 'audioMessage':
-      logger.info({
+      console.info('Mensaje de audio recibido', {
         url: message.message.url,
         mimetype: message.message.mimetype,
         chat: message.chat,
         sender: message.sender,
         name: message.name,
-        quoted: message.quoted,
+        quoted: quotedMessage ? null : quotedMessage,
         command: message.command,
         prefix: message.prefix,
         mentions: message.mentions,
         mimetype: message.mimetype,
-      }, 'mensaje de audio recibido');
+      });
       break;
 
     case 'videoMessage':
-      logger.info({
+      console.info('Mensaje de video recibido', {
         chat: message.chat,
         url: message.message.url,
         mimetype: message.mimetype,
@@ -210,16 +223,19 @@ const logMessage = (message) => {
         width: message.message.width,
         sender: message.sender,
         name: message.name,
-        quoted: message.quoted,
+        quoted: quotedMessage ? null : quotedMessage,  
         command: message.command,
         prefix: message.prefix,
         mentions: message.mentions,
         mimetype: message.mimetype,
-      }, 'Mensaje de video recibido');
+      });
       break;
 
     default:
-      logger.info(message, 'Tipo de mensaje desconocido recibido');
+      console.info('Tipo de mensaje desconocido recibido', message);
       break;
+  }
+} catch (error) {
+   console.error("Error al registrar el mensaje:", error);
   }
 };

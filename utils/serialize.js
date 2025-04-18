@@ -1,9 +1,10 @@
 const { downloadMediaMessage } = require('baileys');
-const { writeFile } = require('fs/promises');
 const path = require('path');
 const { fromBuffer } = require('file-type');
 const dotenv = require('dotenv');
 dotenv.config();
+const fs = require('fs').promises;
+
 
 const MediaType = [
   'imageMessage',
@@ -13,7 +14,8 @@ const MediaType = [
   'documentMessage',
 ];
 
-const downloadBuffer = async (message) => {
+
+const downloadBuffer = async (message, temp = "temp") => {
   try {
     const buffer = await downloadMediaMessage(message, 'buffer');
     if (!buffer) throw new Error('Buffer vacío!');
@@ -21,8 +23,11 @@ const downloadBuffer = async (message) => {
     const fileInfo = await fromBuffer(buffer).catch(() => null);
     const ext = fileInfo?.ext ?? 'bin';
 
-    const filename = path.join(__dirname, '../cache/temp', `${Date.now()}.${ext}`);
-    await writeFile(filename, buffer);
+    const directory = path.join(__dirname, `../cache/${temp}`);
+    await fs.mkdir(directory, { recursive: true });
+
+    const filename = path.join(directory, `${Date.now()}.${ext}`);
+    await fs.writeFile(filename, buffer);
 
     return buffer;
   } catch (err) {
@@ -30,6 +35,7 @@ const downloadBuffer = async (message) => {
     return null;
   }
 };
+
 
 /**
  *
@@ -141,6 +147,7 @@ const processMessage = async (client, msg) => {
         sender: quotedContextInfo.participant,
         mimetype: quotedMessage?.[quotedType]?.mimetype ?? null,
         body: getBody(quotedMessage),
+        caption: quotedMessage?.[quotedType]?.caption ?? null,
         args: getBody(quotedMessage ?? '').trim().split(/\s+/),
         mentions: quotedMessage?.[type]?.contextInfo?.mentionedJid ?? [],
         viewOnce: Boolean(
@@ -158,8 +165,8 @@ const processMessage = async (client, msg) => {
             }
           );
         },
-        download: async () => {
-          return await downloadBuffer(m.quoted);
+        download: async (temp) => {
+          return await downloadBuffer(m.quoted, temp);
         },
       };
     }
@@ -203,7 +210,7 @@ const processMessage = async (client, msg) => {
     };
 
     m.getProfilePicture = async (jid) => await client.profilePictureUrl(jid, 'image');
-    m.download = async () => await downloadBuffer(msg);
+    m.download = async(temp) => await downloadBuffer(msg, temp);
     m.react = async (emoji = '') => client.sendMessage(m.chat, { react: { text: emoji, key: m.key } });
 
     return m;
