@@ -32,7 +32,6 @@ module.exports = {
       const downloadResponse = await api.processDownload(downloadData);
 
       if (downloadResponse.status === "picker") {
-        console.log(downloadResponse.picker);
         let i = 0;
         for (const item of downloadResponse.picker) {
           const mediaType = item.type === 'photo' ? 'image' : 'video';

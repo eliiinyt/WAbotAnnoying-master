@@ -20,6 +20,8 @@ module.exports = {
         env.API_URL,
         env.COBALT_API_KEY
       );
+      console.log(env.API_URL + " " + env.COBALT_API_KEY)
+      console.log(message.args)
       if (!message.args || message.args.length === 0) {
         throw new Error('No se proporcionó un enlace de Instagram.');   
         }
@@ -27,7 +29,8 @@ module.exports = {
         url: message.args[0],
         videoQuality: "720",
         audioFormat: "mp3",
-        filenameStyle: "basic",
+        filenameStyle: "pretty",
+        audioBitrate: "256",
       };
       const downloadResponse = await api.processDownload(downloadData);
 
@@ -45,7 +48,7 @@ module.exports = {
       } else if (downloadResponse.status === "redirect" || downloadResponse.status === "tunnel") {
         const mediaType = determineMediaType(downloadResponse.filename);
         console.log(mediaType)
-        console.log(downloadResponse.filename)
+        console.log(downloadResponse.filename + " " + downloadResponse.url)
         if (mediaType) {
           await message.reply({
             caption: downloadResponse.filename,

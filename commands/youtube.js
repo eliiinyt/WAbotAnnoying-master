@@ -7,28 +7,28 @@ module.exports = {
   description: "youtube downloader",
   execute: async ({ message, env }) => {
     try {
-        console.log(env.API_URL)
       const api = new CobaltAPI(
         env.API_URL,
         env.COBALT_API_KEY
       );
-      env.apiURL
       if (!message.args || message.args.length === 0) {
-        throw new Error('No se proporcionó un enlace de Instagram.');   
+        throw new Error('No se proporcionó un enlace de youtube.');   
         }
       const downloadData = {
         url: message.args[0],
-        videoQuality: message.args[1] || "480p",
+        videoQuality: message.args[1] ? message.args[1] : "480",
         audioFormat: "mp3",
-        filenameStyle: "basic",
+        filenameStyle: "pretty",
       };
+
+      console.log(downloadData)
       const downloadResponse = await api.processDownload(downloadData);
 
     if (downloadResponse.status === "redirect" || downloadResponse.status === "tunnel") {
 
           await message.reply({
             caption: downloadResponse.filename,
-            video: { url: downloadResponse.url }
+            video: { url: downloadResponse.url }, mimetype: "video/mp4"
           });
       } else if (downloadResponse.status === "error") {
         throw new Error(downloadResponse.message);
