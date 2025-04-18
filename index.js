@@ -70,17 +70,19 @@ const Init = async () => {
 
     client.on("message", async (msg) => {
       if (msg.key.remoteJid === "status@broadcast") return;
-      if (process.env.FROM_ME === false && msg.key.fromMe) {
+      if (process.env.FROM_ME === "false" && msg.key.fromMe) {
         return;
       }
       const message = await processMessage(client.client, msg);
-      if (process.env.DEBUG_MODE === true) {
-        console.log("Mensaje recibido:", message);
-      } else {
+      console.log("debug mode: ", process.env.DEBUG_MODE);
+
+      if (process.env.DEBUG_MODE === "false") {
         logMessage(message);
+      } else {
+        console.log("Mensaje recibido:", message);
       }
 
-      const senderId = message.sender.match(/^(\d+)@s\.whatsapp\.net$/)?.[1] || null
+      const senderId = message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] || null
 
       if (!senderId) return;
       await dbManager.saveMessage({ msg: message });
@@ -158,15 +160,29 @@ const logMessage = (message) => {
         chat: message.chat,
         sender: message.sender,
         name: message.name,
+        quoted: message.quoted,
+        command: message.command,
+        prefix: message.prefix,
+        mentions: message.mentions,
+        mimetype: message.mimetype,
       }, 'Mensaje de imagen recibido');
       break;
 
-    case 'textMessage':
+    case 'conversation':
+      case 'extendedTextMessage':
       logger.info({
         body: message.body,
         chat: message.chat,
+        key: message.key,
+        body: message.body,
+        args: message.args,
+        mentions: message.mentions,
+        mimetype: message.mimetype,
         sender: message.sender,
         name: message.name,
+        quoted: message.quoted,
+        command: message.command,
+        prefix: message.prefix,
       }, 'Mensaje de texto recibido');
       break;
 
@@ -177,16 +193,28 @@ const logMessage = (message) => {
         chat: message.chat,
         sender: message.sender,
         name: message.name,
+        quoted: message.quoted,
+        command: message.command,
+        prefix: message.prefix,
+        mentions: message.mentions,
+        mimetype: message.mimetype,
       }, 'mensaje de audio recibido');
       break;
 
     case 'videoMessage':
       logger.info({
-        url: message.message.url,
-        mimetype: message.message.mimetype,
         chat: message.chat,
+        url: message.message.url,
+        mimetype: message.mimetype,
+        height: message.message.height,
+        width: message.message.width,
         sender: message.sender,
         name: message.name,
+        quoted: message.quoted,
+        command: message.command,
+        prefix: message.prefix,
+        mentions: message.mentions,
+        mimetype: message.mimetype,
       }, 'Mensaje de video recibido');
       break;
 

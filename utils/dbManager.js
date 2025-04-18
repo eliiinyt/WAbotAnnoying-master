@@ -71,7 +71,9 @@ class DBManager {
 
     if (!chatId) return;
 
-    const content = `${msg.sender.match(/^(\d+)@s\.whatsapp\.net$/)?.[1]}: ${msg.body}`;
+
+    const content = `${msg.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1]}: ${msg.body === "" ? msg.type : msg.body}`;
+
     await this.db.collection('messages').updateOne(
       { _id: chatId },
       { $push: { messages: content } },
