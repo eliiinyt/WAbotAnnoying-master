@@ -143,99 +143,105 @@ const Init = async () => {
   }
 };
 
-Init();
-
-
 const logMessage = (message) => {
-  try {
   if (!message) return;
+  try {
+    const {
+      quoted,
+      type,
+      chat,
+      sender,
+      name,
+      command,
+      prefix,
+      mentions,
+      body,
+      args,
+      key,
+      message: msg
+    } = message;
 
-const quotedMessage = {
-  type: message.quoted?.type,
-  caption: message.quoted?.caption,
-  mentions: message.quoted?.mentions,
-  args: message.quoted?.args,
-  url: message.quoted?.message[message.quoted.type]?.url,
-  mimetype: message.quoted?.mimetype,
-  height: message.quoted?.message[message.quoted.type]?.height,
-  width: message.quoted?.message[message.quoted.type]?.width,
-  seconds: message.quoted?.message[message.quoted.type]?.seconds,
-};
+    const quotedMessage = quoted
+      ? {
+          type: quoted.type,
+          caption: quoted.caption,
+          mentions: quoted.mentions,
+          args: quoted.args,
+          url: quoted.message?.[quoted.type]?.url,
+          mimetype: quoted.message?.[quoted.type]?.mimetype,
+          height: quoted.message?.[quoted.type]?.height,
+          width: quoted.message?.[quoted.type]?.width,
+          seconds: quoted.message?.[quoted.type]?.seconds,
+        }
+      : null;
 
+    const baseLog = {
+      body,
+      chat,
+      sender,
+      name,
+      command,
+      prefix,
+      mentions,
+      quoted: quotedMessage,
+    };
 
-  switch (message.type) {
-    case 'imageMessage':
-      console.info('Mensaje de imagen recibido',{
-        url: message.message.url,
-        mimetype: message.message.mimetype,
-        height: message.message.height,
-        width: message.message.width,
-        chat: message.chat,
-        sender: message.sender,
-        name: message.name,
-        quoted: quotedMessage ? null : quotedMessage,
-        command: message.command,
-        prefix: message.prefix,
-        mentions: message.mentions,
-        mimetype: message.mimetype,
-      });
-      break;
+    const typeMap = {
+      imageMessage: {
+        label: 'Mensaje de imagen recibido',
+        extra: {
+          url: msg?.url,
+          mimetype: msg?.mimetype,
+          height: msg?.height,
+          width: msg?.width,
+        },
+      },
+      audioMessage: {
+        label: 'Mensaje de audio recibido',
+        extra: {
+          url: msg?.url,
+          mimetype: msg?.mimetype,
+          seconds: msg?.seconds,
+        },
+      },
+      stickerMessage: {
+        label: 'Mensaje de sticker recibido',
+        extra: {
+          url: msg?.url,
+          mimetype: msg?.mimetype,
+          height: msg?.height,
+          width: msg?.width,
+        },
+      },
+      videoMessage: {
+        label: 'Mensaje de video recibido',
+        extra: {
+          url: msg?.url,
+          mimetype: msg?.mimetype,
+          height: msg?.height,
+          width: msg?.width,
+          seconds: msg?.seconds,
+        },
+      },
+      conversation: {
+        label: 'Mensaje de texto recibido',
+        extra: { key, args },
+      },
+      extendedTextMessage: {
+        label: 'Mensaje de texto recibido',
+        extra: { key, args },
+      },
+    };
 
-    case 'conversation':
-      case 'extendedTextMessage':
-      console.info('Mensaje de texto recibido',{
-        body: message.body,
-        chat: message.chat,
-        key: message.key,
-        body: message.body,
-        args: message.args,
-        mentions: message.mentions,
-        mimetype: message.mimetype,
-        sender: message.sender,
-        name: message.name,
-        quoted: quotedMessage ? null : quotedMessage,
-        command: message.command,
-        prefix: message.prefix,
-      });
-      break;
-
-    case 'audioMessage':
-      console.info('Mensaje de audio recibido', {
-        url: message.message.url,
-        mimetype: message.message.mimetype,
-        chat: message.chat,
-        sender: message.sender,
-        name: message.name,
-        quoted: quotedMessage ? null : quotedMessage,
-        command: message.command,
-        prefix: message.prefix,
-        mentions: message.mentions,
-        mimetype: message.mimetype,
-      });
-      break;
-
-    case 'videoMessage':
-      console.info('Mensaje de video recibido', {
-        chat: message.chat,
-        url: message.message.url,
-        mimetype: message.mimetype,
-        height: message.message.height,
-        width: message.message.width,
-        sender: message.sender,
-        name: message.name,
-        quoted: quotedMessage ? null : quotedMessage,  
-        command: message.command,
-        prefix: message.prefix,
-        mentions: message.mentions,
-        mimetype: message.mimetype,
-      });
-      break;
-
-    default:
+    const config = typeMap[type];
+    if (config) {
+      console.info(config.label, { ...baseLog, ...config.extra });
+    } else {
       console.info('Tipo de mensaje desconocido recibido', message);
-      break;
-  }
-} catch (error) {
-   console.error("Error al registrar el mensaje:", error);
+    }
+  } catch (error) {
+    console.error('Error al registrar el mensaje:', error);
   }
 };
+
+Init();

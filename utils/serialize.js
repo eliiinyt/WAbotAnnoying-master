@@ -59,15 +59,15 @@ const getBody = (message) => {
       return message.extendedTextMessage.text;
     }
     return (
-      message.conversation ??
-      message.extendedTextMessage?.text ??
-      message.imageMessage?.caption ??
-      message.videoMessage?.caption ??
-      message.documentMessage?.caption ??
-      message.buttonsResponseMessage?.selectedButtonId ??
-      message.listResponseMessage?.singleSelectReply.selectedRowId ??
-      message.templateButtonReplyMessage?.selectedId ??
-      message.reactionMessage?.text ??
+      message.conversation ||
+      message.extendedTextMessage?.text ||
+      message.imageMessage?.caption ||
+      message.videoMessage?.caption ||
+      message.documentMessage?.caption ||
+      message.buttonsResponseMessage?.selectedButtonId ||
+      message.listResponseMessage?.singleSelectReply.selectedRowId ||
+      message.templateButtonReplyMessage?.selectedId ||
+      message.reactionMessage?.text ||
       ''
     );
   } catch (error) {
@@ -114,6 +114,7 @@ const processMessage = async (client, msg) => {
       me: msg.key.fromMe,
       name: msg.pushName ?? 'undefined',
       body: getBody(msg.message),
+      caption: msg.message?.[messageType]?.caption ?? null,
       args: (getBody(msg.message) ?? '').trim().split(/\s+/),
       quoted: null,
     };

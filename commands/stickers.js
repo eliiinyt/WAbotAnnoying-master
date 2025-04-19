@@ -5,6 +5,9 @@ module.exports = {
 execute: async ({message}) => {
     try {
         const [packname, author] = message.body?.split("|");
+        if (!message.quoted) {
+            throw new Error("responde a una imagen o sticker");
+        }
         const mess = message.quoted ?? message;
         if (/image/g.test(mess.mimetype)) {
             const buffer = await mess.download("stickers/image");
