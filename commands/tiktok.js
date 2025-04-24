@@ -20,14 +20,13 @@ module.exports = {
         env.API_URL,
         env.COBALT_API_KEY
       );
-      console.log(env.API_URL + " " + env.COBALT_API_KEY)
       console.log(message.args)
       if (!message.args || message.args.length === 0) {
         throw new Error('No se proporcionó un enlace de Tiktok.');   
         }
       const downloadData = {
         url: message.args[0],
-        videoQuality: "720",
+        videoQuality: "1080",
         audioFormat: "mp3",
         filenameStyle: "pretty",
         audioBitrate: "256",

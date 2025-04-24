@@ -228,6 +228,10 @@ const logMessage = (message) => {
           seconds: msg?.seconds,
         },
       },
+      protocolMessage: {
+        label: "Mensaje de protocol recibido",
+        extra: { key, args, type: msg?.protocolMessage?.type === 14 ? "14, Edición de mensaje" : msg?.protocolMessage?.type === 4 ? "Ephemeral????" : "Mensaje desconocido, type: " + msg?.protocolMessage?.type},
+      },
       conversation: {
         label: "Mensaje de texto recibido",
         extra: { key, args },
