@@ -1,6 +1,8 @@
 
 const CobaltAPI = require("../tests/cobalt");
 const mime = require('mime-types');
+const { downloadFile } = require('../utils/functions');
+const path = require('path');
 module.exports = {
   name: "youtube",
   alias: ["youtube", "cobalt"],
@@ -16,20 +18,28 @@ module.exports = {
         }
       const downloadData = {
         url: message.args[0],
+        audioFormat: "ogg",
+        audioBitrate: "256",
+        youtubeDubLang: "es-ES",
         videoQuality: message.args[1] ? message.args[1] : "480",
-        audioFormat: "mp3",
-        filenameStyle: "pretty",
+        filenameStyle: "classic",
+        youtubeVideoCodec: "h264",
+        disableMetadata: true,
+        youtubeHLS: false,
+        alwaysProxy: true,
       };
 
       console.log(downloadData)
       const downloadResponse = await api.processDownload(downloadData);
-
     if (downloadResponse.status === "redirect" || downloadResponse.status === "tunnel") {
+      const pathFile = path.join(__dirname, "../", "cache", "youtube", downloadResponse.filename);
+      await downloadFile({url: downloadResponse.url, outputPath: pathFile});
 
-          await message.reply({
+          message.reply({
             caption: downloadResponse.filename,
-            video: { url: downloadResponse.url }, mimetype: "video/mp4"
+            video: { url: pathFile }, mimetype: "video/mp4"
           });
+
       } else if (downloadResponse.status === "error") {
         throw new Error(downloadResponse.message);
       } else {

@@ -230,7 +230,24 @@ const logMessage = (message) => {
       },
       protocolMessage: {
         label: "Mensaje de protocol recibido",
-        extra: { key, args, type: msg?.protocolMessage?.type === 14 ? "14, Edición de mensaje" : msg?.protocolMessage?.type === 4 ? "Ephemeral????" : "Mensaje desconocido, type: " + msg?.protocolMessage?.type},
+        extra: { key, args, type: (() => {
+          const protocolType = msg?.protocolMessage?.type;
+          const entries = Object.entries(msg?.protocolMessage || {});
+          const foundEntry = entries.find(([key, value]) => key !== "type" && key !== "key" && typeof value === "object");
+          
+          if (protocolType === 14 && foundEntry) {
+            return {id: 14, description: "Edición de mensaje", new_message: msg?.protocolMessage?.editedMessage?.conversation};
+          } else if (protocolType === 4 && foundEntry) {
+            return "Ephemeral????";
+          }
+          if (foundEntry) {
+            const [propertyName, propertyValue] = foundEntry;
+            return `Propiedad: ${propertyName}, Tipo: ${protocolType}`;
+        } else {
+          return "Mensaje desconocido, type: " + protocolType;
+        }
+          
+        })(),},
       },
       conversation: {
         label: "Mensaje de texto recibido",

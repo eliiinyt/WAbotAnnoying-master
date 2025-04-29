@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "@vladmandic/face-api": "^1.7.15",
     "baileys": "^6.7.16",
     "canvas": "^3.1.0",
     "chokidar": "^4.0.3",

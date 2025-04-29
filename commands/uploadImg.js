@@ -1,8 +1,8 @@
 module.exports = {
-    name: 'testrikka',
+    name: 'asd',
     description: 'sentFileTest',
     execute: async ({message}) => {
-    await message.reply({ image: { url: './temp/rikka.png' }, caption: "test", mimetype: "image/jpeg" });
+    await message.reply({ video: { url: './cache/youtube/tiktok_cancri_e_7496968565468220690.mp4' }, caption: "test", mimetype: "video/mp4" });
     },
   };
   
