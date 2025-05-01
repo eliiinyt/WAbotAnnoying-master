@@ -85,7 +85,6 @@ const Init = async () => {
 
       const senderId =
         message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] || null;
-
       if (!senderId) return;
       await dbManager.saveMessage({ msg: message });
 
@@ -190,77 +189,99 @@ const logMessage = (message) => {
 
     const typeMap = {
       imageMessage: {
-        label: "Mensaje de imagen recibido",
-        extra: {
-          url: msg?.url,
-          mimetype: msg?.mimetype,
-          height: msg?.height,
-          width: msg?.width,
-        },
+      label: "Mensaje de imagen recibido",
+      extra: {
+        url: msg?.url,
+        mimetype: msg?.mimetype,
+        height: msg?.height,
+        width: msg?.width,
+      },
       },
       audioMessage: {
-        label: "Mensaje de audio recibido",
-        extra: {
-          url: msg?.url,
-          mimetype: msg?.mimetype,
-          seconds: msg?.seconds,
-        },
+      label: "Mensaje de audio recibido",
+      extra: {
+        url: msg?.url,
+        mimetype: msg?.mimetype,
+        seconds: msg?.seconds,
+      },
       },
       reactionMessage: {
-        label: "Mensaje de reacción recibido",
+      label: "Mensaje de reacción recibido",
       },
       stickerMessage: {
-        label: "Mensaje de sticker recibido",
-        extra: {
-          url: msg?.url,
-          mimetype: msg?.mimetype,
-          height: msg?.height,
-          width: msg?.width,
-        },
+      label: "Mensaje de sticker recibido",
+      extra: {
+        url: msg?.url,
+        mimetype: msg?.mimetype,
+        height: msg?.height,
+        width: msg?.width,
+      },
       },
       videoMessage: {
-        label: "Mensaje de video recibido",
-        extra: {
-          url: msg?.url,
-          mimetype: msg?.mimetype,
-          height: msg?.height,
-          width: msg?.width,
-          seconds: msg?.seconds,
-        },
+      label: "Mensaje de video recibido",
+      extra: {
+        url: msg?.url,
+        mimetype: msg?.mimetype,
+        height: msg?.height,
+        width: msg?.width,
+        seconds: msg?.seconds,
+      },
       },
       protocolMessage: {
-        label: "Mensaje de protocol recibido",
-        extra: { key, args, type: (() => {
-          const protocolType = msg?.protocolMessage?.type;
-          const entries = Object.entries(msg?.protocolMessage || {});
-          const foundEntry = entries.find(([key, value]) => key !== "type" && key !== "key" && typeof value === "object");
-          
-          if (protocolType === 14 && foundEntry) {
-            return {id: 14, description: "Edición de mensaje", new_message: msg?.protocolMessage?.editedMessage?.conversation};
-          } else if (protocolType === 4 && foundEntry) {
-            return "Ephemeral????";
-          }
-          if (foundEntry) {
-            const [propertyName, propertyValue] = foundEntry;
-            return `Propiedad: ${propertyName}, Tipo: ${protocolType}`;
+      label: "Mensaje de protocol recibido",
+      extra: {
+        key,
+        args,
+        type: (() => {
+        const protocolType = msg?.protocolMessage?.type;
+        const entries = Object.entries(msg?.protocolMessage || {});
+        const foundEntry = entries.find(
+          ([key, value]) =>
+          key !== "type" &&
+          key !== "key" &&
+          typeof value === "object"
+        );
+
+        if (protocolType === 14 && foundEntry) {
+          return {
+          id: 14,
+          description: "Edición de mensaje",
+          new_message: msg?.protocolMessage?.editedMessage?.conversation,
+          };
+        } else if (protocolType === 4 && foundEntry) {
+          return "Ephemeral????";
+        }
+        if (foundEntry) {
+          const [propertyName, propertyValue] = foundEntry;
+          return `Propiedad: ${propertyName}, Tipo: ${protocolType}`;
         } else {
           return "Mensaje desconocido, type: " + protocolType;
         }
-          
-        })(),},
+        })(),
+      },
       },
       conversation: {
-        label: "Mensaje de texto recibido",
-        extra: { key, args },
+      label: "Mensaje de texto recibido",
+      extra: { key, args },
       },
       extendedTextMessage: {
-        label: "Mensaje de texto recibido",
-        extra: { key, args },
+      label: "Mensaje de texto recibido",
+      extra: { key, args },
+      },
+      editedMessage: {
+      label: "Mensaje editado recibido",
+      extra: {
+        key,
+        args,
+        type: type,
+        description: "Edición de mensaje",
+        new_message: message?.message?.message?.protocolMessage?.[type]?.conversation,
+      },
       },
     };
 
     const config = typeMap[type];
-    if (config) {
+    if (config || type) {
       console.info(config.label, { ...baseLog, ...config.extra });
     } else {
       console.info("Tipo de mensaje desconocido recibido", message);

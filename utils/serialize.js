@@ -114,7 +114,8 @@ const processMessage = async (client, msg) => {
       me: msg.key.fromMe,
       name: msg.pushName ?? 'undefined',
       body: getBody(msg.message),
-      caption: msg.message?.[messageType]?.caption ?? null,
+      caption: msg.message?.[messageType]?.caption ?? msg.message?.[messageType]?.conversation ?? null,
+      captionFutureProof: msg.message?.[messageType]?.message?.protocolMessage?.[messageType]?.conversation ?? null, 
       args: (getBody(msg.message) ?? '').trim().split(/\s+/),
       quoted: null,
     };

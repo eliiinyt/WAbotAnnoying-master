@@ -62,16 +62,25 @@ class DBManager {
       console.error('Database connection not established');
       return;
     }
-
+    
     const chatId = msg.chat.includes('@s.whatsapp.net') 
-      ? msg.sender.match(/^(\d+)@s\.whatsapp\.net$/)?.[1]
+      ? msg.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1]
       : msg.chat.includes('@g.us')
         ? msg.chat.match(/^([\d-]+)@g\.us$/)?.[1]
         : null;
 
     if (!chatId) return;
-
-    const content = `${msg.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1]}: ${msg.type} - ${msg.body}`;
+    
+    const content = (() => {
+      switch (msg.type) {
+        case 'protocolMessage':
+          return `${msg.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1]}@${msg.name}: ${msg.type} - ${msg?.message?.protocolMessage?.editedMessage?.conversation ?? msg?.message?.message?.protocolMessage?.editedMessage?.conversation ?? null}`;
+        case 'editedMessage':
+          return `${msg.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] === "584262086639" ? msg.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] + "/FromMe" : msg.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1]}@${msg.name}: ${msg.type} - ${msg?.message?.message?.protocolMessage?.editedMessage?.conversation ?? msg?.editedMessage?.conversation ?? null}`;
+        default:
+          return `${msg.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1]}@${msg.name}: ${msg.type} - ${msg.body}`;
+      }
+    })();
 
     await this.db.collection('messages').updateOne(
       { _id: chatId },
