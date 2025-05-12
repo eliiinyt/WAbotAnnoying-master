@@ -15,6 +15,7 @@ module.exports = {
   name: "cobalt-downloader",
   alias: ["igdl", "cobalt"],
   description: "cobalt downloader testing",
+  isOwner: true,
   execute: async ({ message, env }) => {
     try {
       const api = new CobaltAPI(

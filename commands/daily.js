@@ -1,5 +1,6 @@
 module.exports = {
     name: 'daily',
+    isOwner: true,
     description: 'Reclama tu recompensa diaria de monedas',
     execute: async ({ message, dbManager }) => {
       try {

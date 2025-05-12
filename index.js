@@ -1,4 +1,9 @@
 const Client = require("./client");
+const express = require("express");
+const app = express();
+const bcrypt = require("bcrypt");
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
 const path = require("path");
 const CommandLoader = require("./libs/loader");
 const client = new Client();
@@ -11,6 +16,7 @@ const GPTWrapper = require("./libs/gpt");
 const { exec } = require("child_process");
 const dotenv = require("dotenv");
 dotenv.config();
+const bodyParser = require("body-parser");
 
 const logger = client.logger;
 const model = "DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf";
@@ -30,6 +36,42 @@ const options = {
 const dbManager = new DBManager(process.env.DB_URI, process.env.DB_NAME);
 const commandsDir = path.join(__dirname, "commands");
 const commandLoader = new CommandLoader(commandsDir);
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.static(path.join(__dirname, "public")));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (username === process.env.EMAIL) {
+      // bcrypt.compare(password, process.env.PASSWORD_HASH).then((match) => {
+      if (password === process.env.PASSWORD) {
+        res.json({ success: true });
+      } else {
+        res.json({ success: false, message: "Contraseña incorrecta" });
+      }
+      //   })
+    } else {
+      res.json({ success: false, message: "Usuario incorrecto" });
+    }
+  } catch (error) {
+    console.error("Error al procesar el login:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Error interno del servidor" });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+http.listen(PORT, () => {
+  console.log(`debería funcionar en el puerto: ${PORT}`);
+});
 
 const loadCommands = (filePath) => {
   console.log(
@@ -100,6 +142,21 @@ const Init = async () => {
         },
       };
 
+      io.on("connection", (socket) => {
+        socket.removeAllListeners("reply");
+        console.log("Un cliente se ha conectado =)=)=???)=?)?=?)");
+        socket.on("reply", (data) => {
+          try {
+            message.sendMessage(data.log.chat, data.replyMessage);
+          } catch (error) {
+            console.error("Error al enviar la respuesta:", error);
+          }
+          socket.on("disconnect", () => {
+            console.log("Un cliente se ha desconectado");
+          });
+        });
+      });
+
       //const watch = watchMessage(client, processMessage);
 
       if (!message.prefix) {
@@ -109,10 +166,20 @@ const Init = async () => {
         return;
       }
       const command = commandLoader.getCommand(message.command);
+
       if (!command) {
         return;
       }
       try {
+        if (command.isOwner === true && message.sender !== process.env.OWNER) {
+          await message.react("❌");
+          return message.reply("Error: No tienes permiso para usar este comando.");
+        }
+        console.log("Comando:", command);
+        if (command.isNSFW && process.env.NSFW) {
+          await message.react("❌");
+          return message.reply("Error: No están permitidos los comandos NSFW.");
+        }
         await message.react("✅");
         await command.execute({
           message,
@@ -125,7 +192,7 @@ const Init = async () => {
       } catch (error) {
         console.error("Error ejecutando comando:", error);
         await message.react("💀");
-        await message.reply("Error: " + error.message);
+        message.reply("Error: " + error.message);
       }
 
       updatePayload.inc.commands_count = 1;
@@ -164,16 +231,16 @@ const logMessage = (message) => {
 
     const quotedMessage = quoted
       ? {
-          type: quoted.type,
-          caption: quoted.caption,
-          mentions: quoted.mentions,
-          args: quoted.args,
-          url: quoted.message?.[quoted.type]?.url,
-          mimetype: quoted.message?.[quoted.type]?.mimetype,
-          height: quoted.message?.[quoted.type]?.height,
-          width: quoted.message?.[quoted.type]?.width,
-          seconds: quoted.message?.[quoted.type]?.seconds,
-        }
+        type: quoted.type,
+        caption: quoted.caption,
+        mentions: quoted.mentions,
+        args: quoted.args,
+        url: quoted.message?.[quoted.type]?.url,
+        mimetype: quoted.message?.[quoted.type]?.mimetype,
+        height: quoted.message?.[quoted.type]?.height,
+        width: quoted.message?.[quoted.type]?.width,
+        seconds: quoted.message?.[quoted.type]?.seconds,
+      }
       : null;
 
     const baseLog = {
@@ -189,105 +256,106 @@ const logMessage = (message) => {
 
     const typeMap = {
       imageMessage: {
-      label: "Mensaje de imagen recibido",
-      extra: {
-        url: msg?.url,
-        mimetype: msg?.mimetype,
-        height: msg?.height,
-        width: msg?.width,
-      },
+        label: "Mensaje de imagen recibido",
+        extra: {
+          url: msg?.url,
+          mimetype: msg?.mimetype,
+          height: msg?.height,
+          width: msg?.width,
+        },
       },
       audioMessage: {
-      label: "Mensaje de audio recibido",
-      extra: {
-        url: msg?.url,
-        mimetype: msg?.mimetype,
-        seconds: msg?.seconds,
-      },
+        label: "Mensaje de audio recibido",
+        extra: {
+          url: msg?.url,
+          mimetype: msg?.mimetype,
+          seconds: msg?.seconds,
+        },
       },
       reactionMessage: {
-      label: "Mensaje de reacción recibido",
+        label: "Mensaje de reacción recibido",
       },
       stickerMessage: {
-      label: "Mensaje de sticker recibido",
-      extra: {
-        url: msg?.url,
-        mimetype: msg?.mimetype,
-        height: msg?.height,
-        width: msg?.width,
-      },
+        label: "Mensaje de sticker recibido",
+        extra: {
+          url: msg?.url,
+          mimetype: msg?.mimetype,
+          height: msg?.height,
+          width: msg?.width,
+        },
       },
       videoMessage: {
-      label: "Mensaje de video recibido",
-      extra: {
-        url: msg?.url,
-        mimetype: msg?.mimetype,
-        height: msg?.height,
-        width: msg?.width,
-        seconds: msg?.seconds,
-      },
+        label: "Mensaje de video recibido",
+        extra: {
+          url: msg?.url,
+          mimetype: msg?.mimetype,
+          height: msg?.height,
+          width: msg?.width,
+          seconds: msg?.seconds,
+        },
       },
       protocolMessage: {
-      label: "Mensaje de protocol recibido",
-      extra: {
-        key,
-        args,
-        type: (() => {
-        const protocolType = msg?.protocolMessage?.type;
-        const entries = Object.entries(msg?.protocolMessage || {});
-        const foundEntry = entries.find(
-          ([key, value]) =>
-          key !== "type" &&
-          key !== "key" &&
-          typeof value === "object"
-        );
+        label: "Mensaje de protocol recibido",
+        extra: {
+          key,
+          args,
+          type: (() => {
+            const protocolType = msg?.protocolMessage?.type;
+            const entries = Object.entries(msg?.protocolMessage || {});
+            const foundEntry = entries.find(
+              ([key, value]) =>
+                key !== "type" && key !== "key" && typeof value === "object"
+            );
 
-        if (protocolType === 14 && foundEntry) {
-          return {
-          id: 14,
-          description: "Edición de mensaje",
-          new_message: msg?.protocolMessage?.editedMessage?.conversation,
-          };
-        } else if (protocolType === 4 && foundEntry) {
-          return "Ephemeral????";
-        }
-        if (foundEntry) {
-          const [propertyName, propertyValue] = foundEntry;
-          return `Propiedad: ${propertyName}, Tipo: ${protocolType}`;
-        } else {
-          return "Mensaje desconocido, type: " + protocolType;
-        }
-        })(),
-      },
+            if (protocolType === 14 && foundEntry) {
+              return {
+                id: 14,
+                description: "Edición de mensaje",
+                new_message: msg?.protocolMessage?.editedMessage?.conversation,
+              };
+            } else if (protocolType === 4 && foundEntry) {
+              return "Ephemeral????";
+            }
+            if (foundEntry) {
+              const [propertyName, propertyValue] = foundEntry;
+              return `Propiedad: ${propertyName}, Tipo: ${protocolType}`;
+            } else {
+              return "Mensaje desconocido, type: " + protocolType;
+            }
+          })(),
+        },
       },
       conversation: {
-      label: "Mensaje de texto recibido",
-      extra: { key, args },
+        label: "Mensaje de texto recibido",
+        extra: { key, args },
       },
       extendedTextMessage: {
-      label: "Mensaje de texto recibido",
-      extra: { key, args },
+        label: "Mensaje de texto recibido",
+        extra: { key, args },
       },
       editedMessage: {
-      label: "Mensaje editado recibido",
-      extra: {
-        key,
-        args,
-        type: type,
-        description: "Edición de mensaje",
-        new_message: message?.message?.message?.protocolMessage?.[type]?.conversation,
-      },
+        label: "Mensaje editado recibido",
+        extra: {
+          key,
+          args,
+          type: type,
+          description: "Edición de mensaje",
+          new_message:
+            message?.message?.message?.protocolMessage?.[type]?.conversation,
+        },
       },
     };
 
     const config = typeMap[type];
     if (config || type) {
-      console.info(config.label, { ...baseLog, ...config.extra });
+      const logEntry = { ...baseLog, ...config.extra };
+      console.info(config?.label, { ...baseLog, ...config.extra });
+      io.emit("newLog", logEntry);
     } else {
       console.info("Tipo de mensaje desconocido recibido", message);
     }
   } catch (error) {
-    console.error("Error al registrar el mensaje:", error);
+    console.error("Error al registrar el mensaje:", error, "Mensaje:", message);
   }
 };
 

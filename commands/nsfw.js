@@ -2,6 +2,7 @@ const { getNSFWImage } = require('../utils/waifuim-wrapper');
 
 module.exports = {
     name: 'getnsfw',
+    isNSFW: true,
     description: 'envía una imagen NSFW',
     execute: async ({message}) => {
         const nsfw = ['ass', 'hentai', 'milf', 'oral', 'paizuri', 'ecchi', 'ero'];

@@ -4,6 +4,7 @@ const characterData = require('../utils/getCharacterData');
 module.exports = {
   name: 'gachapon',
   description: 'Gachapon',
+  isOwner: true,
   execute: async ({ message, gachapon, dbManager }) => {
     try {
       const characterAttributes = new characterData({dbManager});

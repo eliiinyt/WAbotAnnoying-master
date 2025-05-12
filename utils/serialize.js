@@ -199,6 +199,18 @@ const processMessage = async (client, msg) => {
       );
     };
 
+    m.sendMessage = (chat, content, options = {}) => {
+      return client.sendMessage(
+        chat,
+        typeof content === 'string' ? { text: content, ...options } : content,
+        {
+          ...options,
+          quoted: m.quoted ? m.quoted : null,
+          ...(m.key && { id: m.key.id }),
+        }
+      ); 
+    }
+
     m.edit = (content, options = {}) => {
       return client.sendMessage(
         m.chat,

@@ -2,6 +2,7 @@ const BattleManager = require('../utils/battleManager');
 const Enemy = require('../utils/enemy');
 module.exports = {
   name: 'battle',
+  isOwner: true,
   description: 'Inicia una batalla contra enemigos',
   execute: async ({ message, dbManager, watchMessage }) => {
     try {
