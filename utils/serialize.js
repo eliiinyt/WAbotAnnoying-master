@@ -1,6 +1,5 @@
 const { downloadMediaMessage } = require('baileys');
 const path = require('path');
-const { fromBuffer } = require('file-type');
 const dotenv = require('dotenv');
 dotenv.config();
 const fs = require('fs').promises;
@@ -13,15 +12,45 @@ const MediaType = [
   'stickerMessage',
   'documentMessage',
 ];
+async function getFileType(buffer) {
 
+    const signs = {
+    'jpg': [0xFF, 0xD8, 0xFF],
+    'png': [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
+    'gif': [0x47, 0x49, 0x46, 0x38],
+    'pdf': [0x25, 0x50, 0x44, 0x46],
+    'zip': [0x50, 0x4B, 0x03, 0x04],
+    'mp3': [0x49, 0x44, 0x33],
+    'mp4': [0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70],
+  };
+    for (const [ext, signature] of Object.entries(signs)) {
+    if (buffer.length >= signature.length) {
+      let match = true;
+      for (let i = 0; i < signature.length; i++) {
+        if (buffer[i] !== signature[i]) {
+          match = false;
+          break;
+        }
+      }
+      if (match) {
+        return ext;
+      }
+    }
+  }
+    return 'bin';
+}
 
 const downloadBuffer = async (message, temp = "temp") => {
+
+
+
   try {
+
     const buffer = await downloadMediaMessage(message, 'buffer');
     if (!buffer) throw new Error('Buffer vacío!');
 
-    const fileInfo = await fromBuffer(buffer).catch(() => null);
-    const ext = fileInfo?.ext ?? 'bin';
+    const fileInfo = await getFileType(buffer).catch(() => null);
+    const ext = fileInfo ? fileInfo.ext : 'bin';
 
     const directory = path.join(__dirname, `../cache/${temp}`);
     await fs.mkdir(directory, { recursive: true });

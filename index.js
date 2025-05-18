@@ -144,7 +144,7 @@ const Init = async () => {
 
       io.on("connection", (socket) => {
         socket.removeAllListeners("reply");
-        console.log("Un cliente se ha conectado =)=)=???)=?)?=?)");
+        console.log("Un cliente se ha conectado =)=)=???)");
         socket.on("reply", (data) => {
           try {
             message.sendMessage(data.log.chat, data.replyMessage);
@@ -313,12 +313,10 @@ const logMessage = (message) => {
                 description: "Edición de mensaje",
                 new_message: msg?.protocolMessage?.editedMessage?.conversation,
               };
-            } else if (protocolType === 4 && foundEntry) {
-              return "Ephemeral????";
-            }
+            } 
             if (foundEntry) {
               const [propertyName, propertyValue] = foundEntry;
-              return `Propiedad: ${propertyName}, Tipo: ${protocolType}`;
+              return `Propiedad: ${propertyName}, Tipo: ${protocolType}, propiedad: ${propertyValue}`;
             } else {
               return "Mensaje desconocido, type: " + protocolType;
             }

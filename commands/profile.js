@@ -7,7 +7,7 @@ module.exports = {
     execute: async ({ message, dbManager }) => {
         try {
 
-            const userId = (message.mentions.length > 0 ? message.mentions[0].match(/^(\d+)@s\.whatsapp\.net$/)[1] : message.sender.match(/^(\d+)@s\.whatsapp\.net$/)[1]);
+            const userId = (message.mentions.length > 0 ? message.mentions[0].match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] : message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1]);
 
             const user = await dbManager.getUserData(userId);
 

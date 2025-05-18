@@ -4,7 +4,7 @@ module.exports = {
     description: 'devuelve los datos del usuario en texto',
     execute: async ({message, dbManager}) => {
         try {
-            const userId = message.sender.match(/^(\d+)@s\.whatsapp\.net$/)[1];
+            const userId = message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1];
             if (!userId) {
                 throw new Error('No se encontró información del usuario.');
             }
