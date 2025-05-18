@@ -94,7 +94,7 @@ const character_details = player;
       critRate: (stats.critRate.value * 100).toFixed(1),
       elementMastery: stats.elementMastery.value.toFixed(0),
       maxHealth: stats.maxHealth.value.toFixed(0),
-      currentEnergy: (stats.currentEnergy + 100).toFixed(0),
+      currentEnergy: (stats.chargeEfficiency.value * 100).toFixed(1),
       highestDamageBonus: stats.highestDamageBonus.reduce((prev, current) => {
         return (prev.value > current.value) ? prev : current;
       }, { value: -Infinity })
@@ -238,11 +238,16 @@ const character_details = player;
     }
 
      async function drawStats(ctx, stats, startX, startY, canvasWidth, canvasHeight) {
-        
+    let highestDamageBonusValue
       const highestDamageBonusName = stats.highestDamageBonus.fightPropName.get("es");
-      const highestDamageBonusValue = stats.highestDamageBonus.isPercent
-      ? (stats.highestDamageBonus.value * 100).toFixed(1)
-      : stats.highestDamageBonus.value.toFixed(0);
+        
+    if (stats.highestDamageBonus.value !== 0) {
+        highestDamageBonusValue = `${stats.highestDamageBonus.isPercent
+            ? (stats.highestDamageBonus.value * 100).toFixed(1)
+            : stats.highestDamageBonus.value.toFixed(0)}%`;
+    }   
+
+
       const characterStats = {
         attack: stats.attack,
         critDamage: `${stats.critDamage}%`,
@@ -250,8 +255,10 @@ const character_details = player;
         elementMastery: stats.elementMastery,
         maxHealth: stats.maxHealth,
         currentEnergy: `${stats.currentEnergy}%`,
-        highestDamageBonus: `${highestDamageBonusValue}%`,
       };
+      if (highestDamageBonusValue) {
+  characterStats.highestDamageBonus = highestDamageBonusValue;
+}
     const stats_es = {
       attack: "ATQ",
       critDamage: "Daño CRIT",
