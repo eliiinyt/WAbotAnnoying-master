@@ -2,34 +2,31 @@ const { EventEmitter } = require('events');
 const {
   makeWASocket,
   useMultiFileAuthState,
-  makeInMemoryStore,
   DisconnectReason,
   proto,
 } = require('baileys');
 const pino = require('pino');
 const pretty = require('pino-pretty');
+
 const stream = pretty({
   colorize: true,
   translateTime: true,
   ignore: 'pid,hostname',
 });
+
 const CONNECTION_TIMEOUT = 30000;
 const RECONNECT_DELAY = 5000;
 
 class Client extends EventEmitter {
-  client;
-  store;
-  logger;
-
   constructor() {
     super();
-    this.logger = pino({ level: 'info'}, stream);
+    this.client = null;
+    this.logger = pino({ level: 'info' }, stream);
     this.logger.info('Iniciando cliente de WhatsApp');
   }
 
   async connect() {
     try {
-      this.store = makeInMemoryStore({ logger: this.logger });
       const { state, saveCreds } = await useMultiFileAuthState('Auth');
       await this.initSocket(state, saveCreds);
     } catch (error) {
@@ -42,8 +39,8 @@ class Client extends EventEmitter {
       auth: state,
       printQRInTerminal: true,
       logger: this.logger,
-      getMessage: async (key) => {
-        return this.store?.loadMessage(key.remoteJid, key.id)?.message || proto.Message.fromObject({});
+      getMessage: async () => {
+        return proto.Message.fromObject({});
       },
     });
 
@@ -52,7 +49,6 @@ class Client extends EventEmitter {
   }
 
   setupCoreListeners(saveCreds) {
-    this.store.bind(this.client.ev);
     this.client.ev.on('creds.update', saveCreds);
     this.client.ev.on('connection.update', (update) => this.handleConnectionUpdate(update));
   }
@@ -89,13 +85,11 @@ class Client extends EventEmitter {
     } else if (connection === 'open') {
       this.handleSuccessfulConnection();
     }
-
     this.emit('connection.update', { connection, lastDisconnect });
   }
 
   handleDisconnect(lastDisconnect) {
     this.logger.warn('Conexión cerrada:', lastDisconnect?.error);
-
     if (lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut) {
       this.logger.info(`Reconectando en ${RECONNECT_DELAY / 1000} segundos...`);
       setTimeout(() => this.connect(), RECONNECT_DELAY);
@@ -111,15 +105,12 @@ class Client extends EventEmitter {
 
   setupEventListeners() {
     this.logger.info('Conexión establecida, configurando listeners de eventos.');
-
     this.client.ev.on('group-participants.update', (update) =>
       this.emit('participant-update', this.client, update)
     );
-
     this.client.ev.on('groups.update', (update) =>
       this.emit('group-update', this.client, update)
     );
-
     this.client.ev.on('messages.upsert', async ({ messages }) => {
       for (const message of messages) {
         if (message.message) {

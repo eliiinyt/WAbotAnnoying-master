@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status!1!!</title>
+    <meta name="description" content="Página de inicio de sesión y panel de control">
+    <title>Panel de Control</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -13,7 +14,7 @@
             <div class="col-md-6 col-lg-4">
                 <div class="card">
                     <div class="card-body">
-                        <h2 class="card-title text-center">Login</h2>
+                        <h2 class="card-title text-center">Iniciar Sesión</h2>
                         <form id="login-form">
                             <div class="form-group">
                                 <label for="username">Usuario</label>
@@ -25,6 +26,9 @@
                             </div>
                             <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
                         </form>
+                        <div class="text-center mt-3">
+                            <img src="/res/image.png" alt="Logo" class="img-fluid" style="max-width: 100px;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -32,7 +36,7 @@
 
         <div id="main-content" style="display: none;">
             <header class="bg-dark text-white text-center py-4">
-                <h1>Status!1!!</h1>
+                <h1>Panel de Control</h1>
                 <nav>
                     <ul class="nav justify-content-center">
                         <li class="nav-item"><a class="nav-link" href="#logs">Logs</a></li>
@@ -48,11 +52,35 @@
                 </section>
                 <section id="options">
                     <h2>Opciones</h2>
-                    <p>Configuración y opciones.</p>
+                    <div class="form-group">
+                        <label for="theme">Tema</label>
+                        <select class="form-control" id="theme">
+                            <option value="light">Claro</option>
+                            <option value="dark">Oscuro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="notifications">Notificaciones</label>
+                        <select class="form-control" id="notifications">
+                            <option value="all">Todas</option>
+                            <option value="none">Ninguna</option>
+                        </select>
+                    </div>
                 </section>
                 <section id="profile">
                     <h2>Perfil</h2>
-                    <p>Información del perfil.</p>
+                    <div class="form-group">
+                        <label for="profile-picture">Foto de Perfil</label>
+                        <input type="file" class="form-control-file" id="profile-picture">
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Nombre</label>
+                        <input type="text" class="form-control" id="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email">
+                    </div>
                 </section>
             </main>
         </div>

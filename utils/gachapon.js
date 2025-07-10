@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
 class Gachapon {
   constructor(dbManager) {
@@ -7,11 +7,11 @@ class Gachapon {
     this.pullCost = 160;
     this.characters = this.loadCharacters();
   }
-/**
- * 
- * @returns {JSON.parse(charactersData)}
- * 
- */
+  /**
+   * 
+   * @returns {JSON.parse(charactersData)}
+   * 
+   */
   loadCharacters() {
     const charactersPath = path.join(__dirname, '../assets/gachapon/characters.json');
     const charactersData = fs.readFileSync(charactersPath, 'utf-8');
@@ -28,7 +28,7 @@ class Gachapon {
 
   async pull(userId, pulls) {
     const user = await this.dbManager.getUserData(userId);
-    let pullData = await this.dbManager.getUserPullData({userId});
+    const pullData = await this.dbManager.getUserPullData({ userId });
 
     if (user.coins === undefined) {
       await this.dbManager.db.collection('users').updateOne(
@@ -48,7 +48,7 @@ class Gachapon {
 
     const pullResults = [];
     for (let i = 0; i < pulls; i++) {
-      let characterId = this.pullCharacter(pullData);
+      const characterId = this.pullCharacter(pullData);
       if (characterId && this.characters[characterId].rarity >= 3) {
         pullResults.push(characterId);
         if (this.characters[characterId].rarity === 4) pullData.pullsSinceLast4Star = 0;
@@ -58,7 +58,7 @@ class Gachapon {
           const baseCharacter = this.characters[characterId];
           user.character_data[characterId] = {
             level: 1,
-            xp: 0, 
+            xp: 0,
             custom_atk: baseCharacter.atk,
             custom_hp: baseCharacter.hp,
             custom_def: baseCharacter.def,
@@ -73,7 +73,7 @@ class Gachapon {
       pullData.pullsSinceLast5Star++;
     }
 
-    await this.dbManager.updateUserPullData({userId, pullData});
+    await this.dbManager.updateUserPullData({ userId, pullData });
 
     if (pullResults.some(charId => charId !== null)) {
       const characterDataUpdates = pullResults
