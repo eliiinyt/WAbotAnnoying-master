@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { isNSFW } = require('../commands/nsfw');
 
 class CommandLoader {
   constructor(commandsDir) {
@@ -21,9 +20,9 @@ class CommandLoader {
           isOwner: command.isOwner || false,
           description: command.description || 'No hay descripción',
           isNSFW: command.isNSFW || false,
-          execute: command.execute || (() => { throw new Error('No se ha definido la función execute') }),
+          execute: command.execute || (() => { throw new Error('No se ha definido la función execute'); }),
         };
-        this.commands.set(command.name, command);
+        this.commands.set(commandData.name, command);
         this.clearModuleCache(resolvedPath);
       }
     }

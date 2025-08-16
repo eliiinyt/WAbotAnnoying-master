@@ -5,8 +5,8 @@ module.exports = {
     name: 'profile',
     description: 'Devuelve una tarjeta de perfil de usuario con sus datos en la DB',
     execute: async ({ message, dbManager }) => {
-
-        const userId = (message.mentions.length > 0 ? message.mentions[0].match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] : message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1]);
+        // eslint-disable-next-line max-len
+        const userId = message.mentions.length > 0 ? (message.mentions[0].match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] || message.mentions[0].match(/^(\d+)@lid$/)?.[1]) : (message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] || message.sender.match(/^(\d+)@lid$/)?.[1]) || null;
 
         const user = await dbManager.getUserData(userId);
 

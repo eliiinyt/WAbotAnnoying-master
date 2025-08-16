@@ -33,21 +33,21 @@ class BattleManager {
       const playerTeam = await Promise.all(playerDataPromises);
       const combat = new Combat(playerTeam, enemies, this.characterData, userId);
       let battleStatus = null;
-      let isFirstTurn = true
+      let isFirstTurn = true;
       const options = { time: 15000, max: 4 };
 
       while (!battleStatus) {
         try {
-        const currentPlayer = combat.playerTeam[combat.currentPlayerIndex];
-        const currentEnemy = combat.enemyTeam[combat.currentEnemyIndex];
-        let combinedMessage = '';
-        combinedMessage += `${currentPlayer.character.name}, ¿qué quieres hacer? (atacar, defender, magia, estado)\n\n `;  
-        if (isFirstTurn) {
-          const buffer = await this.generateBattleImage(combat, message);
-          await message.reply({ image: buffer, caption: combinedMessage });
-          isFirstTurn = false;
-        }
-        const collected = await watchMessage(message.sender, options);
+          const currentPlayer = combat.playerTeam[combat.currentPlayerIndex];
+          const currentEnemy = combat.enemyTeam[combat.currentEnemyIndex];
+          let combinedMessage = '';
+          combinedMessage += `${currentPlayer.character.name}, ¿qué quieres hacer? (atacar, defender, magia, estado)\n\n `;
+          if (isFirstTurn) {
+            const buffer = await this.generateBattleImage(combat, message);
+            await message.reply({ image: buffer, caption: combinedMessage });
+            isFirstTurn = false;
+          }
+          const collected = await watchMessage(message.sender, options);
           if (collected.length === 0) {
             await message.reply('No respondiste a tiempo. La batalla ha terminado.');
             break;

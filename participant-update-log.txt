@@ -1,0 +1,1 @@
+{"id":"120363418445417809@g.us","author":"191431624904720@lid","participants":["191431624904720@lid"],"action":"remove"}{"id":"120363418445417809@g.us","author":null,"participants":["191431624904720@lid"],"action":"add"}

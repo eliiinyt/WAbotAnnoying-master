@@ -1,12 +1,15 @@
 const { EventEmitter } = require('events');
+const NodeCache = require('node-cache');
 const {
   makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   proto,
 } = require('baileys');
+
 const pino = require('pino');
 const pretty = require('pino-pretty');
+const QRCode = require('qrcode');
 
 const stream = pretty({
   colorize: true,
@@ -16,6 +19,7 @@ const stream = pretty({
 
 const CONNECTION_TIMEOUT = 30000;
 const RECONNECT_DELAY = 5000;
+const groupCache = new NodeCache({ stdTTL: 3600, checkperiod: 120 });
 
 class Client extends EventEmitter {
   constructor() {
@@ -23,6 +27,10 @@ class Client extends EventEmitter {
     this.client = null;
     this.logger = pino({ level: 'info' }, stream);
     this.logger.info('Iniciando cliente de WhatsApp');
+    this.connectionPromise = null;
+    this.connectionResolve = null;
+    this.connectionReject = null;
+    this.timeout = null;
   }
 
   async connect() {
@@ -37,10 +45,12 @@ class Client extends EventEmitter {
   async initSocket(state, saveCreds) {
     this.client = makeWASocket({
       auth: state,
-      printQRInTerminal: true,
       logger: this.logger,
       getMessage: async () => {
         return proto.Message.fromObject({});
+      },
+      cachedGroupMetadata: async (jid) => {
+        return groupCache.get(jid);
       },
     });
 
@@ -53,38 +63,48 @@ class Client extends EventEmitter {
     this.client.ev.on('connection.update', (update) => this.handleConnectionUpdate(update));
   }
 
-  async waitForConnection() {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        this.cleanupConnectionListeners(checkConnection);
+  waitForConnection() {
+    this.connectionPromise = new Promise((resolve, reject) => {
+      this.connectionResolve = resolve;
+      this.connectionReject = reject;
+
+      this.timeout = setTimeout(() => {
+        this.cleanupConnectionListeners();
         reject(new Error(`Tiempo de conexión agotado después de ${CONNECTION_TIMEOUT}ms`));
       }, CONNECTION_TIMEOUT);
-
-      const checkConnection = ({ connection }) => {
-        if (connection === 'open') {
-          this.cleanupConnectionListeners(checkConnection, timeout);
-          resolve();
-        } else if (connection === 'close') {
-          this.cleanupConnectionListeners(checkConnection, timeout);
-          reject(new Error('Conexión cerrada'));
-        }
-      };
-
-      this.client.ev.on('connection.update', checkConnection);
     });
+
+    return this.connectionPromise;
   }
 
-  cleanupConnectionListeners(listener, timeout) {
-    if (timeout) clearTimeout(timeout);
-    this.client.ev.off('connection.update', listener);
+  cleanupConnectionListeners() {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
   }
 
-  handleConnectionUpdate({ connection, lastDisconnect }) {
+  handleConnectionUpdate(update) {
+    const { connection, lastDisconnect, qr } = update;
+
     if (connection === 'close') {
       this.handleDisconnect(lastDisconnect);
     } else if (connection === 'open') {
+      this.cleanupConnectionListeners();
+      this.connectionResolve();
       this.handleSuccessfulConnection();
     }
+
+    if (qr) {
+      QRCode.toString(qr, { type: 'terminal' }, (err, qrString) => {
+        if (err) {
+          this.logger.error('Error al generar el código QR:', err);
+        } else {
+          console.log(qrString);
+        }
+      });
+    }
+
     this.emit('connection.update', { connection, lastDisconnect });
   }
 
@@ -106,11 +126,22 @@ class Client extends EventEmitter {
   setupEventListeners() {
     this.logger.info('Conexión establecida, configurando listeners de eventos.');
     this.client.ev.on('group-participants.update', (update) =>
-      this.emit('participant-update', this.client, update)
+      this.emit('participant-update', update)
     );
-    this.client.ev.on('groups.update', (update) =>
-      this.emit('group-update', this.client, update)
-    );
+
+    this.client.ev.on('groups.update', async (updates) => {
+      this.emit('groups.update', updates);
+      // for (const update of updates) {
+      //   const groupId = update.id;
+      //   const groupMetadata = await this.client.groupMetadata(groupId);
+      //   groupCache.set(groupId, groupMetadata);
+      // }
+    });
+    this.client.ev.on('group-participants.update', async (participants) => {
+      this.emit('group-participants.update', participants);
+    });
+
+
     this.client.ev.on('messages.upsert', async ({ messages }) => {
       for (const message of messages) {
         if (message.message) {
@@ -126,4 +157,4 @@ class Client extends EventEmitter {
   }
 }
 
-module.exports = Client;
+module.exports = { Client, groupCache };

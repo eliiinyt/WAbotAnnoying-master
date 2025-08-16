@@ -1,4 +1,4 @@
-const Client = require('./client');
+const { Client, groupCache } = require('./client');
 const express = require('express');
 const app = express();
 const bcrypt = require('bcrypt');
@@ -17,6 +17,7 @@ const { exec } = require('child_process');
 const dotenv = require('dotenv');
 dotenv.config();
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
 const logger = client.logger;
 const model = 'DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf';
@@ -107,6 +108,15 @@ const Init = async () => {
       console.log('Conectado a WhatsApp!');
     });
 
+    client.on('group-participants.update', async (update) => {
+      const { id, participants, action } = update;
+      console.log(id, participants, action);
+    });
+    client.on('groups.update', async (update) => {
+      console.log(update);
+    });
+
+
     client.on('message', async (msg) => {
       if (msg.key.remoteJid === 'status@broadcast') return;
       if (process.env.FROM_ME === 'false' && msg.key.fromMe) {
@@ -122,7 +132,7 @@ const Init = async () => {
       }
 
       const senderId =
-        message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] || null;
+        message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] || message.sender.match(/^(\d+)@lid$/)?.[1] || null;
       if (!senderId) return;
       await dbManager.saveMessage({ msg: message });
 
@@ -169,11 +179,13 @@ const Init = async () => {
       }
       try {
         if (command.isOwner === true && message.sender !== process.env.OWNER) {
+          console.warn('Intento de uso de comando restringido por el usuario:', message.sender);
           await message.react('❌');
           return message.reply('Error: No tienes permiso para usar este comando.');
         }
         console.log('Comando:', command);
         if (command.isNSFW && process.env.NSFW !== 'true') {
+          console.warn('Intento de uso de comando NSFW sin permiso:', message.sender);
           await message.react('❌');
           return message.reply('Error: No están permitidos los comandos NSFW.');
         }

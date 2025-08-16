@@ -7,32 +7,24 @@ class Gachapon {
     this.pullCost = 160;
     this.characters = this.loadCharacters();
   }
-  /**
-   * 
-   * @returns {JSON.parse(charactersData)}
-   * 
-   */
+
   loadCharacters() {
     const charactersPath = path.join(__dirname, '../assets/gachapon/characters.json');
     const charactersData = fs.readFileSync(charactersPath, 'utf-8');
     return JSON.parse(charactersData);
   }
 
-  /**
-   * 
-   * @param {*} userId 
-   * @param {*} pulls 
-   * @returns 
-   * 
-   */
-
   async pull(userId, pulls) {
     const user = await this.dbManager.getUserData(userId);
-    const pullData = await this.dbManager.getUserPullData({ userId });
+    if (!user) {
+      throw new Error('Usuario no encontrado.');
+    }
+
+    const pullData = await this.dbManager.getUserPullData({ userId: user.user_id || user.user_lid });
 
     if (user.coins === undefined) {
       await this.dbManager.db.collection('users').updateOne(
-        { user_id: userId },
+        { $or: [{ user_id: user.user_id }, { user_lid: user.user_lid }] },
         { $set: { coins: 1600 } }
       );
       user.coins = 1600;
@@ -73,7 +65,7 @@ class Gachapon {
       pullData.pullsSinceLast5Star++;
     }
 
-    await this.dbManager.updateUserPullData({ userId, pullData });
+    await this.dbManager.updateUserPullData({ userId: user.user_id || user.user_lid, pullData });
 
     if (pullResults.some(charId => charId !== null)) {
       const characterDataUpdates = pullResults
@@ -84,7 +76,7 @@ class Gachapon {
         }, {});
 
       await this.dbManager.db.collection('users').updateOne(
-        { user_id: userId },
+        { $or: [{ user_id: user.user_id }, { user_lid: user.user_lid }] },
         {
           $inc: { coins: -this.pullCost * pulls },
           $push: { characters: { $each: pullResults.filter(charId => charId !== null) } },
@@ -93,7 +85,7 @@ class Gachapon {
       );
     } else {
       await this.dbManager.db.collection('users').updateOne(
-        { user_id: userId },
+        { $or: [{ user_id: user.user_id }, { user_lid: user.user_lid }] },
         { $inc: { coins: -this.pullCost * pulls } }
       );
     }
@@ -101,14 +93,9 @@ class Gachapon {
     return pullResults;
   }
 
-
-  /**
-   * 
-   */
   pullCharacter(pullData) {
     const is4StarGuaranteed = pullData.pullsSinceLast4Star >= 9;
     const is5StarGuaranteed = pullData.pullsSinceLast5Star >= 89;
-
     let rarity;
     if (is5StarGuaranteed) {
       rarity = 5;
@@ -127,7 +114,6 @@ class Gachapon {
     if (rarity === 3) {
       return null;
     }
-
     const availableCharacterIds = Object.keys(this.characters).filter(charId => this.characters[charId].rarity === rarity);
     if (availableCharacterIds.length === 0) {
       throw new Error(`No se encontraron personajes con la rareza: ${rarity}`);
@@ -136,11 +122,6 @@ class Gachapon {
     return selectedCharacterId;
   }
 
-  /**
-   * 
-   * @param {} userId 
-   * @returns {user.character|| []}
-   */
   async inventory(userId) {
     const user = await this.dbManager.getUserData(userId);
     return user.characters || [];

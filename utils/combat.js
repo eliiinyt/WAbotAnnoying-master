@@ -14,15 +14,15 @@ class Combat {
       atk: enemy.atk,
       def: enemy.def
     }));
-    this.effects = {}; // Efectos de estado
+    this.effects = {}; // Efectos de estado. Algún día implemento esto btw
     this.currentPlayerIndex = 0;
     this.currentEnemyIndex = 0;
   }
 
   applyEffects(character) {
-    let modifiedStats = { ...character };
+    const modifiedStats = { ...character };
     if (this.effects[character.id]) {
-      for (let effect of this.effects[character.id]) {
+      for (const effect of this.effects[character.id]) {
         switch (effect.type) {
           case 'blind':
             modifiedStats.accuracy = (modifiedStats.accuracy || 100) - effect.value;
@@ -37,13 +37,13 @@ class Combat {
   }
 
   calculateDamage(attacker, defender, actionType) {
-    const defenderStats = defender
-    attacker.character.atk
+    const defenderStats = defender;
+    const attackerStats = attacker.character;
     let baseDamage = 0;
-    console.log(attacker)
+    console.log(attacker);
     switch (actionType) {
       case 'attack':
-        baseDamage = attacker.character.atk
+        baseDamage = attackerStats.atk;
         break;
       case 'magic':
         baseDamage = attackerStats.magic_atk - defenderStats.def;
@@ -87,24 +87,23 @@ class Combat {
     //const currentPlayer = this.playerTeam[this.currentPlayerIndex];
 
     if (enemy.hp > 0) {
-    const randomAction = Math.random();
+      const randomAction = Math.random();
 
 
-    let result;
-    if (randomAction < 0.7) { // 70% de probabilidad de atacar
-      console.log(enemy)
-      result = { damage:enemy.atk }
-      player.hp -= result.damage;
-      if (player.hp < 0) currentPlayer.hp = 0;
+      let result;
+      if (randomAction < 0.7) { // 70% de probabilidad de atacar
+        console.log(enemy);
+        result = { damage: enemy.atk };
+        player.hp -= result.damage;
+        if (player.hp < 0) player.hp = 0;
+      } else {
+        result = { damage: 0, hit: true }; // el enemigo no hace nada
+      }
+
+      return { result, playerHp: player.hp };
     } else {
-      // otras acciones
-      result = { damage: 0, hit: true }; // el enemigo no hace nada
+      return { result: { damage: 0, hit: false }, playerHp: player.hp };
     }
-
-    return { result, playerHp: player.hp };
-  } else {
-    return { result: { damage: 0, hit: false }, playerHp: player.hp };
-  }
   }
 
   nextPlayer() {
@@ -118,7 +117,7 @@ class Combat {
   getBattleStatus() {
     return {
       playerTeam: this.playerTeam.map(p => ({ id: p.id, name: p.character.name, hp: p.hp })),
-      enemyTeam: this.enemyTeam.map(e => ({ name: e.name, hp: e.hp, atk: e.atk,def: e.def })),
+      enemyTeam: this.enemyTeam.map(e => ({ name: e.name, hp: e.hp, atk: e.atk, def: e.def })),
     };
   }
 

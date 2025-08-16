@@ -1,14 +1,15 @@
+/* eslint-disable no-useless-catch */
 const { getCharacterData, generateInventoryImage, generateCharacterProfile } = require('../utils/invGenerator');
 const characterData = require('../utils/getCharacterData');
 
 module.exports = {
   name: 'gachapon',
   description: 'Gachapon',
-  isOwner: true,
+  isOwner: false,
   execute: async ({ message, gachapon, dbManager }) => {
     try {
-      const characterAttributes = new characterData({dbManager});
-      const userId = message.sender.match(/^(\d+)@s\.whatsapp\.net$/)[1];
+      const characterAttributes = new characterData({ dbManager });
+      const userId = message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] || message.sender.match(/^(\d+)@lid$/)?.[1] || null;
       const args = message.args;
       const command = args[0];
       const pulls = args[1] ? parseInt(args[1], 10) : 1;
@@ -61,9 +62,9 @@ module.exports = {
           throw new Error('Por favor, proporciona el ID del personaje para ver su perfil.');
         }
         //const characters = await getCharacterData(inventory);
-        const characterDetails = await characterAttributes.getUserCharacterAttributes(userId, characterId)
-        console.log(characterDetails)
-        const buffer = await generateCharacterProfile({characterId, characterDetails});
+        const characterDetails = await characterAttributes.getUserCharacterAttributes(userId, characterId);
+        console.log(characterDetails);
+        const buffer = await generateCharacterProfile({ characterId, characterDetails });
         const imageMessage = {
           caption: `> Detalles del personaje con ID ${characterId}:`,
           image: buffer
@@ -77,7 +78,7 @@ module.exports = {
         if (isNaN(newLevel) || newLevel <= 0) {
           throw new Error('Nivel inválido, por favor especifique un número entero positivo');
         }
-        const updatedCharacter = await characterAttributes.levelUp({userId, characterId, newLevel});
+        const updatedCharacter = await characterAttributes.levelUp({ userId, characterId, newLevel });
 
         const responseMessage = `¡El personaje ${updatedCharacter.name} ha sido actualizado a nivel ${updatedCharacter.level}!`;
         message.reply(responseMessage);
@@ -86,7 +87,7 @@ module.exports = {
         message.reply('Comando inválido, usa "gachapon pull", "gachapon inventory", "gachapon profile [ID]" o "gachapon levelup [ID] [Nuevo Nivel]".');
       }
     } catch (error) {
-    throw error;
+      throw error;
     }
   },
 };

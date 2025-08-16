@@ -271,6 +271,10 @@ const processMessage = async (client, msg) => {
         }
       );
     };
+    m.groupMetadata = async () => {
+      const metadata = await client.groupMetadata(m.chat);
+      return metadata;
+    };
 
     m.getProfilePicture = async (jid) => await client.profilePictureUrl(jid, 'image');
     m.download = async (temp) => await downloadBuffer(msg, temp);
