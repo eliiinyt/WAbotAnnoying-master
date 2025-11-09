@@ -190,8 +190,7 @@ const processMessage = async (client, msg) => {
           id: quotedContextInfo.stanzaId,
         },
         id: quotedContextInfo.stanzaId,
-        isBot: quotedContextInfo.stanzaId.startsWith('BAE5') ||
-          quotedContextInfo.stanzaId.startsWith('3EB0'),
+        //isBot: quotedContextInfo.stanzaId.startsWith('BAE5') || quotedContextInfo.stanzaId.startsWith('3EB0'),
         isGroup: (quotedContextInfo.remoteJid ?? m.sender).endsWith('@g.us'),
         chat: m.key.remoteJid,
         type: quotedType,
@@ -271,6 +270,7 @@ const processMessage = async (client, msg) => {
         }
       );
     };
+
     m.groupMetadata = async () => {
       const metadata = await client.groupMetadata(m.chat);
       return metadata;

@@ -7,7 +7,7 @@ const CobaltAPI = require('./cobalt.js');
   );
 
   const downloadData = {
-    url: 'https://vm.tiktok.com/ZMSgCN5NC/',
+    url: 'https://www.youtube.com/watch?v=zf1DBztn7Uw',
     videoQuality: '720',
     audioFormat: 'mp3',
     filenameStyle: 'pretty',

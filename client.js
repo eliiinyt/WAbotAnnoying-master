@@ -46,6 +46,7 @@ class Client extends EventEmitter {
     this.client = makeWASocket({
       auth: state,
       logger: this.logger,
+      version: [2, 3000, 1025190524],
       getMessage: async () => {
         return proto.Message.fromObject({});
       },

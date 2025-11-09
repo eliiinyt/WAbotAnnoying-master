@@ -8,7 +8,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 
 module.exports = {
   name: 'youtube',
-  alias: ['youtube', 'cobalt'],
+  alias: ['youtube', 'cobalt', 'yt'],
   description: 'youtube downloader',
   execute: async ({ message, env }) => {
     const api = new CobaltAPI(
@@ -18,18 +18,28 @@ module.exports = {
     if (!message.args || message.args.length === 0) {
       throw new Error('No se proporcionó un enlace de youtube.');
     }
+
+    let isAudio = false;
+    if (message.args[0] === 'audio') {
+      isAudio = true;
+
+    } else if (message.args[0] === 'video') {
+      isAudio = false;
+    }
     const downloadData = {
-      url: message.args[0],
-      //audioFormat: 'ogg',
-      //audioBitrate: '256',
-      youtubeDubLang: 'es-ES',
-      videoQuality: message.args[1] ? message.args[1] : '480',
+      url: message.args[1],
+      audioFormat: 'mp3',
+      audioBitrate: '256',
+      downloadMode: isAudio ? 'audio' : 'auto',
+      youtubeDubLang: isAudio ? undefined : 'es-ES',
+      videoQuality: isAudio ? undefined : message.args[2] ? message.args[2].match(/^\d+/)[0] : '480',
       filenameStyle: 'classic',
-      youtubeVideoCodec: 'h264',
+      youtubeVideoCodec: isAudio ? undefined : 'h264',
       disableMetadata: false,
       //youtubeHLS: false,
       alwaysProxy: false,
     };
+    console.log(downloadData);
 
     const downloadResponse = await api.processDownload(downloadData);
 
@@ -55,8 +65,8 @@ module.exports = {
 
       message.reply({
         caption: downloadResponse.filename,
-        video: { url: outputPath },
-        mimetype: 'video/mp4'
+        [isAudio ? 'audio' : 'video']: { url: outputPath },
+        mimetype: isAudio ? 'audio/mpeg' : 'video/mp4'
       });
 
     } else if (downloadResponse.status === 'error') {
