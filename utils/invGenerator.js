@@ -12,7 +12,7 @@ const colors = {
   whiteTransparent: 'rgba(255, 255, 255, 0.3)',
   blackTransparent: 'rgba(0, 0, 0, 0.5)',
   white: 'white',
-  yellow: '#FFD700', // Color dorado para las estrellas
+  yellow: '#FFD700',
   background: '#222222',
   cardBackground: '#333333',
   textWhite: '#FFFFFF',
@@ -39,21 +39,21 @@ async function generateInventoryImage(characters) {
   ctx.drawImage(chat, 0, 0, canvasWidth, canvasHeight);
 
   let characterIndex = 0;
-  
-      
+
+
   for (let row = 0; row < 4; row++) {
     for (let col = 0; col < 5; col++) {
       const x = col * (imageSize + canvasWidth * paddingPercentage);
       const y = row * (imageSize + canvasHeight * paddingPercentage);
-      
+
       drawRectangle(ctx, x, y);
       if (characterIndex < characters.length) {
-      await drawInventoryCharacter(ctx, characters[characterIndex], x, y);
-      characterIndex++;
-      //const character = characters[characterIndex];
+        await drawInventoryCharacter(ctx, characters[characterIndex], x, y);
+        characterIndex++;
+        //const character = characters[characterIndex];
       }
       drawRectangle(ctx, x, y, false);
-      
+
     }
   }
 
@@ -91,7 +91,7 @@ async function drawInventoryCharacter(ctx, character, x, y) {
   }
 }
 
-async function generateCharacterProfile({characterId, characterDetails}) {
+async function generateCharacterProfile({ characterId, characterDetails }) {
   try {
     const canvas = createCanvas(canvasWidth, 800);
     const ctx = canvas.getContext('2d');
@@ -173,7 +173,7 @@ async function drawCharacterStat(ctx, statName, statValue, iconName, x, y) {
   }
 }
 
-function calculateLevelFromXP({xp}) {
+function calculateLevelFromXP({ xp }) {
   const level = Math.floor(0.1 * Math.sqrt(xp));
   const xpForCurrentLevel = Math.pow(level / 0.1, 2);
   const xpForNextLevel = Math.pow((level + 1) / 0.1, 2);
@@ -181,7 +181,7 @@ function calculateLevelFromXP({xp}) {
 }
 
 function drawExperienceBar(ctx, xp, x, y) {
-  const { xpForCurrentLevel, xpForNextLevel } = calculateLevelFromXP({xp});
+  const { xpForCurrentLevel, xpForNextLevel } = calculateLevelFromXP({ xp });
 
   const xpRange = xpForNextLevel - xpForCurrentLevel;
   const xpProgress = xp - xpForCurrentLevel;
@@ -198,7 +198,7 @@ function drawExperienceBar(ctx, xp, x, y) {
   // Texto del XP actual
   ctx.fillStyle = colors.white;
   ctx.fillText(`${xp} XP`, x + 130, y + 18);
-  ctx.fillText(`${xpForNextLevel} XP`, x+310, y + 18)
+  ctx.fillText(`${xpForNextLevel} XP`, x + 310, y + 18)
 }
 
 

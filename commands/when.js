@@ -5,9 +5,10 @@ module.exports = {
     category: 'general',
     usage: 'ping',
     owner: false,
-    execute: async ({ message }) => {
+    execute: async ({ message, gptWrapper }) => {
         console.log('Comando de prueba ejecutado');
-        message.sendMessage('120363418445417809@g.us', 'pong');
+        await gptWrapper.resetChat();
+        message.reply('sans');
 
     }
 };

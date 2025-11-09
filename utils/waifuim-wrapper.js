@@ -26,9 +26,9 @@ async function getImage(tags, type = 'sfw') {
   return images[0];
 }
 
-async function searchImages(tags, additionalParams  = {}) { //maybe sirva los parámetros adicionales para luego reutilizar esto en otra API
+async function searchImages(tags, additionalParams = {}) { //maybe sirva los parámetros adicionales para luego reutilizar esto en otra API
   if (!tags || !Array.isArray(tags)) {
-    throw new TypeError(`Fallo de tags: se necesita un array de tags para hacer la búsqueda`);
+    throw new TypeError('Fallo de tags: se necesita un array de tags para hacer la búsqueda');
   }
 
   const apiUrl = 'https://api.waifu.im/search';

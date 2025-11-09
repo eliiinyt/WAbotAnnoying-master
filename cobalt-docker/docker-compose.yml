@@ -1,12 +1,12 @@
 services:
     cobalt:
-        image: ghcr.io/imputnet/cobalt:11
+        image: ghcr.io/imputnet/cobalt:latest
 
         init: true
         read_only: false
         restart: unless-stopped
         container_name: cobalt
-
+        
         ports:
             - 9000:9000/tcp
             # if you use a reverse proxy (such as nginx),
@@ -16,7 +16,7 @@ services:
         environment:
             # replace https://api.url.example/ with your instance's url
             # or else tunneling functionality won't work properly
-            API_URL: http://localhost:9000
+            API_URL: http://localhost:9000/
             DURATION_LIMIT: 1500
             API_PORT: 9000
             # API_KEY_URL: "file:///keys.json"
