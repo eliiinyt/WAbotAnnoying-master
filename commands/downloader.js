@@ -1,0 +1,67 @@
+const CobaltAPI = require("../tests/cobalt");
+const mime = require('mime-types');
+
+function determineMediaType(filename) {
+  const mimeType = mime.lookup(filename);
+  if (mimeType && mimeType.startsWith('image/')) {
+    return 'image';
+  } else {
+    return 'video';
+  }
+}
+
+module.exports = {
+  name: "downloader",
+  alias: ["dl", "cobalt"],
+  description: "descargador generico ig",
+  execute: async ({ message, env }) => {
+    try {
+      const api = new CobaltAPI(
+        env.API_URL,
+        env.COBALT_API_KEY
+      );
+      console.log(message.args)
+      if (!message.args || message.args.length === 0) {
+        throw new Error('No se proporcionó un enlace');
+      }
+      const downloadData = {
+        url: message.args[0],
+        videoQuality: "1080",
+        audioFormat: "mp3",
+        filenameStyle: "pretty",
+        audioBitrate: "256",
+      };
+      const downloadResponse = await api.processDownload(downloadData);
+      if (downloadResponse.status === "picker") {
+        console.log(downloadResponse.picker);
+        let i = 0;
+        for (const item of downloadResponse.picker) {
+          const mediaType = item.type === 'photo' ? 'image' : 'video';
+          await message.reply({
+            caption: `*${i + 1}* ${item.title || ''}`,
+            [mediaType]: { url: item.url }
+          });
+          i++;
+        }
+      } else if (downloadResponse.status === "redirect" || downloadResponse.status === "tunnel") {
+        const mediaType = determineMediaType(downloadResponse.filename);
+        console.log(mediaType)
+        console.log(downloadResponse.filename + " " + downloadResponse.url)
+        if (mediaType) {
+          await message.reply({
+            caption: downloadResponse.filename,
+            [mediaType]: { url: downloadResponse.url }
+          });
+        } else {
+          throw new Error('Tipo de archivo no soportado: ' + downloadResponse.filename);
+        }
+      } else if (downloadResponse.status === "error") {
+        throw new Error(downloadResponse.message);
+      } else {
+        throw new Error("Estado inesperado: " + downloadResponse.status);
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+};

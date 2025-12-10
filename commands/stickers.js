@@ -1,22 +1,46 @@
-const { createSticker, addExif } = require('../libs/stickers');
+const { createSticker, videoToWebp } = require('../libs/stickers'); 
+
 module.exports = {
     name: 's',
-    description: 'test',
+    description: 'Crea stickers de imagen o video',
     execute: async ({ message }) => {
-        const [packname, author] = [message.args[0] ? message.args[0] : 'Stickers', message.args[1] ? message.args[1] : 'testing'];
+        const [packname, author] = [message.args[0] ?? 'Stickers', message.args[1] ?? 'Bot'];
+        
         if (!message.quoted && !message) {
-            throw new Error('responde a una imagen o sticker');
+            throw new Error('Responde a una imagen o video.');
         }
+        
         const mess = message.quoted || message;
-        if (/image/g.test(mess.mimetype)) {
-            const buffer = await mess.download('stickers/image');
-            const sticker = await createSticker(buffer.buffer, null, packname, author);
-            return await message.reply({ sticker });
+        const mime = mess.mimetype || '';
+
+        const mediaObject = await mess.download(); 
+        
+        const buffer = Buffer.from(mediaObject.buffer); 
+
+        if (/image/g.test(mime) && !/gif/g.test(mime)) {
+            try {
+                const sticker = await createSticker(buffer, null, packname, author);
+                return await message.reply({ sticker });
+            } catch (e) {
+                console.error(e);
+                return message.reply("Error al crear sticker.");
+            }
         }
-        if (/webp/g.test(mess.mimetype)) {
-            const buffer = await mess.download('stickers/image');
-            const sticker = await addExif(buffer.buffer, packname, author);
-            return await message.reply({ sticker });
+        else if (/video/g.test(mime) || /gif/g.test(mime)) {
+            if ((mess.msg || mess).seconds > 8) return message.reply("Máximo 8 segundos.");
+            
+            try {
+                const webpBuffer = await videoToWebp(buffer);
+                const sticker = await createSticker(webpBuffer, null, packname, author);
+                return await message.reply({ sticker });
+            } catch (e) {
+                console.error(e);
+                return message.reply("Error al procesar el video.");
+            }
+        }
+        else if (/webp/g.test(mime)) {
+             const sticker = await createSticker(buffer, null, packname, author);
+             return await message.reply({ sticker });
         }
     }
 };
