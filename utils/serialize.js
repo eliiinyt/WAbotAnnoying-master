@@ -158,7 +158,7 @@ const processMessage = async (client, msg) => {
       message: content ?? msg.message,
       key: msg.key,
       chat: msg.key.remoteJid,
-      sender: msg.key.fromMe ? client.user.id : msg.key.participant ?? msg.key.remoteJid,
+      sender: msg.key.fromMe ? client.user.id : (msg.key.participant || msg.key.remoteJid || msg.key.remoteJidAlt),
       type: messageType,
       mentions: msg.message[messageType]?.contextInfo?.mentionedJid ?? [],
       mimetype: msg.message?.mimetype ?? content?.mimetype ?? null,

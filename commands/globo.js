@@ -11,7 +11,7 @@ module.exports = {
             const bufferImage = await mess.download('globo/image');
             const image = await loadImage(bufferImage.filename);
             const globo = await loadImage(path.join(__dirname, '../cache/globo/globo.png'));
-
+            
             const canvas = createCanvas(image.width, image.height + (image.height / 4));
             const ctx = canvas.getContext('2d');
 

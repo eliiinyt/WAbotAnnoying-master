@@ -12,12 +12,13 @@ const chokidar = require('chokidar');
 const DBManager = require('./utils/dbManager');
 const Gachapon = require('./utils/gachapon');
 const GPTWrapper = require('./libs/gpt');
+const ConfigManager = require('./utils/configManager');
+const downloaderCommand = require('./commands/downloader');
 const dotenv = require('dotenv');
 dotenv.config();
 const bodyParser = require('body-parser');
 const fs = require('fs');
 
-// --- Configuración del Servidor Web ---
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -53,15 +54,10 @@ app.post('/login', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-// --- Fin Configuración Web ---
-
-// --- Lógica del Bot ---
 const gptWrapper = new GPTWrapper(process.env.GEMINI_API_KEY);
 const dbManager = new DBManager(process.env.DB_URI, process.env.DB_NAME);
 const commandsDir = path.join(__dirname, 'commands');
 const commandLoader = new CommandLoader(commandsDir);
-
-// Carga los grupos ignorados desde .env (ej: ID1,ID2)
 const ignoredGroups = (process.env.IGNORED_GROUPS || '').split(',');
 
 const loadCommands = (filePath) => {
@@ -72,12 +68,13 @@ const loadCommands = (filePath) => {
   commandLoader.loadCommands(commandsDir, commandName);
 };
 
+
+
 const Init = async () => {
   try {
     await dbManager.connect();
-    // await gptWrapper.load(); // Descomentar si se usa un modelo local
+    // await gptWrapper.load();
 
-    // Observador de archivos para recarga en caliente de comandos
     chokidar
       .watch(commandsDir, { ignoreInitial: true })
       .on('change', loadCommands);
@@ -132,7 +129,6 @@ const Init = async () => {
       }
 
       const message = await processMessage(client.client, msg);
-
       if (process.env.DEBUG_MODE === 'false') {
         logMessage(message, io).catch(console.error);
       } else {
@@ -143,7 +139,6 @@ const Init = async () => {
         message.sender.match(/^(\d+)(?::\d+)?@s\.whatsapp\.net$/)?.[1] ||
         message.sender.match(/^(\d+)@lid$/)?.[1] ||
         null;
-      
       if (!senderId) return;
 
       await dbManager.saveMessage({ msg: message });
@@ -162,6 +157,46 @@ const Init = async () => {
 
       if (ignoredGroups.includes(message.chat)) {
         return;
+      }
+
+
+      //autodescargas NO tocar (de verdad por favor esto fue innecesario)
+      const configManager = new ConfigManager(path.join(__dirname, 'config.json'));
+      const groupConfig = configManager.getGroupConfig(message.chat);
+
+      if (groupConfig.autodownload) {
+        const supportedDomains = [
+          /(?:https?:\/\/)?(?:www\.|web\.|m\.)?(facebook\.com|fb\.watch)\/[^\s]+/i,
+          /(?:https?:\/\/)?(?:www\.)?(instagram\.com|instagr\.am)\/[^\s]+/i,
+          /(?:https?:\/\/)?(?:www\.|vm\.|vt\.)?tiktok\.com\/[^\s]+/i
+        ];
+
+        let match;
+        for (const regex of supportedDomains) {
+          const found = message.body.match(regex);
+          if (found) {
+            match = found[0];
+            break;
+          }
+        }
+        
+        if (match) {
+           const url = match;
+           console.log('Autodescargas fue activada para:', url);
+           
+           const mockMessage = { ...message, args: [url], reply: message.reply.bind(message) };
+           
+           try {
+            await message.react('✅');
+             await downloaderCommand.execute({
+                message: mockMessage,
+                env: process.env
+             });
+           } catch (error) {
+            await message.react('❌');
+             console.error('Autodescargas falló:', error.message);
+           }
+        }
       }
 
       if (!message.prefix || !message.command) {
@@ -192,7 +227,7 @@ const Init = async () => {
         if (command?.react === true || command?.react === null || command?.react === undefined) {
           await message.react('✅');
         }
-
+        console.log('Ejecutando comando:', command.name);
         await command.execute({
           message,
           dbManager,
